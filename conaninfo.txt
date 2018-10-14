@@ -1,0 +1,78 @@
+[settings]
+    arch=x86_64
+    build_type=Release
+    compiler=Visual Studio
+    compiler.runtime=MD
+    compiler.version=14
+    os=Windows
+
+[requires]
+    Boost/1.Y.Z
+    SDL2/2.Y.Z
+    glew/2.Y.Z
+    glm/master
+
+[options]
+
+
+[full_settings]
+    arch=x86_64
+    build_type=Release
+    compiler=Visual Studio
+    compiler.runtime=MD
+    compiler.version=14
+    os=Windows
+
+[full_requires]
+    Boost/1.64.0@conan/stable:ee5dab950b6ea94ae953b93c55343e98c2ec39df
+    SDL2/2.0.5@lasote/ci:5873ceb24abc9238c6bd91b567a277ab595c8b62
+    glew/2.0.0-1@lasote/vcpkg:63da998e3642b50bee33f4449826b2d623661505
+    glm/master@g-truc/stable:5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9
+    zlib/1.2.8@lasote/stable:63da998e3642b50bee33f4449826b2d623661505
+
+[full_options]
+    Boost:header_only=False
+    Boost:python=False
+    Boost:shared=False
+    Boost:without_atomic=False
+    Boost:without_chrono=False
+    Boost:without_container=False
+    Boost:without_context=False
+    Boost:without_coroutine=False
+    Boost:without_coroutine2=False
+    Boost:without_date_time=False
+    Boost:without_exception=False
+    Boost:without_fiber=False
+    Boost:without_filesystem=False
+    Boost:without_graph=False
+    Boost:without_graph_parallel=False
+    Boost:without_iostreams=False
+    Boost:without_locale=False
+    Boost:without_log=False
+    Boost:without_math=False
+    Boost:without_metaparse=False
+    Boost:without_mpi=False
+    Boost:without_program_options=False
+    Boost:without_random=False
+    Boost:without_regex=False
+    Boost:without_serialization=False
+    Boost:without_signals=False
+    Boost:without_system=False
+    Boost:without_test=False
+    Boost:without_thread=False
+    Boost:without_timer=False
+    Boost:without_type_erasure=False
+    Boost:without_wave=False
+    SDL2:directx=False
+    SDL2:fPIC=True
+    SDL2:shared=False
+    zlib:shared=False
+
+[scope]
+    dev=True
+
+[recipe_hash]
+
+
+[env]
+

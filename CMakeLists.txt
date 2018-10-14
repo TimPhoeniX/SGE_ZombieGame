@@ -1,29 +1,41 @@
 cmake_minimum_required(VERSION 3.5)
-project(ZombieGame)
+project(Zombie2D)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMakeModules")
 
 include(CMakeModules/sge_debug_info.cmake)
 
-option(PACKAGE_MANAGER "Default project package manager default: NONE" NONE)
-option(SGE_ROOT "SGE install directory" NONE)
+#option(PACKAGE_MANAGER "Default project package manager default: NONE" NONE)
+#option(SGE_ROOT "SGE install directory" NONE)
 option(INCLUDE_ENGINE_PROJECT "If enabled includes SGE as subproject" OFF)
 option(COPY_SHADERS "If the SGE was not included as sub-project settig this option will copy GLSL files into CMAKE_RUNTIME_OUTPUT_DIRECTORY" OFF)
 option(COPY_GAME_RESOURCES "If enabled copies game resources into CMAKE_RUNTIME_OUTPUT_DIRECTORY" OFF)
-option(SETUP_BUILD_DIR "Setup project libs path" NONE)
-option(CMAKE_TOOLCHAIN_FILE "CMake toolchain file defines build configuration" NONE)
+#option(SETUP_BUILD_DIR "Setup project libs path" NONE)
+#option(CMAKE_TOOLCHAIN_FILE "CMake toolchain file defines build configuration" NONE)
+
+set(SETUP_BUILD_DIR NONE CACHE PATH "Setup project libs path")
+set(SGE_ROOT NONE CACHE PATH "SGE install directory")
+set(CMAKE_INSTALL_PREFIX NONE CACHE PATH "Defines to path in which SGE framework should be installed, default: NONE")
+set(CMAKE_TOOLCHAIN_FILE NONE CACHE FILEPATH "CMake toolchain file defines build configuration")
+set(PACKAGE_MANAGER NONE CACHE STRING "Default project package manager, default: NONE")
 
 set(MASTER_BUILD_TYPES "Debug Release RelWithDebInfo MinSizeRel")
 string(REPLACE " " ";" MASTER_BUILD_TYPES_AVAILABLE ${MASTER_BUILD_TYPES})
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${MASTER_BUILD_TYPES_AVAILABLE})
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build -- release is default. Other: ${MASTER_BUILD_TYPES}.")
+	message(STATUS "Setting default CMake build type: ${CMAKE_BUILD_TYPE}")
+elseif(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build -- release is default. Other: ${MASTER_BUILD_TYPES}.")
 	message(STATUS "Setting default CMake build type: ${CMAKE_BUILD_TYPE}")
 else()
 	set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Choose the type of build -- release is default. Other: ${MASTER_BUILD_TYPES}.")
 	message(STATUS "Provided CMake build type: ${CMAKE_BUILD_TYPE}")
 endif()
+
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${MASTER_BUILD_TYPES_AVAILABLE})
 
 if (NOT PACKAGE_MANAGER)
 	message(WARNING "Option PACKAGE_MANAGER not passed, setting: NONE")
@@ -47,11 +59,6 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 14)
-
-if (NOT CMAKE_BUILD_TYPE)
-    message(STATUS "No build type selected -- default is Debug")
-    set(CMAKE_BUILD_TYPE "Debug")
-endif()
 
 message(STATUS "BUILD TYPE: ${CMAKE_BUILD_TYPE}")
 
@@ -99,7 +106,7 @@ else()
 	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2")
 	set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} /O2")
 
-	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT SGE-ZombieGame)
+	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Zombie2D)
 	link_directories("${CMAKE_CURRENT_BINARY_DIR}/lib")
 endif()
 
@@ -178,4 +185,4 @@ else()
 	endif()
 endif()
 
-add_subdirectory(ZombieGame)
+add_subdirectory(Zombie2D)
