@@ -176,7 +176,7 @@ bool ZombieScene::init()
 	worldFilter.categoryBits = uint16(Category::Level);
 	worldFilter.maskBits = Category::Player | Category::Human | Category::Zombie | Category::Camera | Category::Corpse;
 
-	b2Vec2 points[3] = { b2Vec2(-0.5,-0.5), b2Vec2(0.5,-0.5), b2Vec2(0,0.5) };
+	b2Vec2 points[3] = {b2Vec2(-0.5f,-0.5f), b2Vec2(-0.5f,0.5f), b2Vec2(0.5f,0.f)};
 	playerShape.Set(points, 3);
 
 	return true;
@@ -231,19 +231,19 @@ void ZombieScene::loadScene()
 	SGE::Rectangle* horizontal = new SGE::Rectangle(60 * 64, 64, false);
 	SGE::Rectangle* vertical = new SGE::Rectangle(64, 61 * 64, false);
 
-	world.emplace_back(-30.5f * 64, 0, game->getGamePath() + "Resources/Textures/light_bricks.png");
+	world.emplace_back(-30.5f, 0, game->getGamePath() + "Resources/Textures/light_bricks.png");
 	world.back().setShape(vertical);
-	world.emplace_back(30.5f * 64, 0, game->getGamePath() + "Resources/Textures/light_bricks.png");
+	world.emplace_back(30.5f, 0, game->getGamePath() + "Resources/Textures/light_bricks.png");
 	world.back().setShape(vertical);
-	world.emplace_back(0, 30 * 64, game->getGamePath() + "Resources/Textures/light_bricks.png");
+	world.emplace_back(0, 30, game->getGamePath() + "Resources/Textures/light_bricks.png");
 	world.back().setShape(horizontal);
-	world.emplace_back(0, -30 * 64, game->getGamePath() + "Resources/Textures/light_bricks.png");
+	world.emplace_back(0, -30 , game->getGamePath() + "Resources/Textures/light_bricks.png");
 	world.back().setShape(horizontal);
 
 	for(SGE::WorldElement& e: this->getLevel().getWorld())
 	{
 		b2Body* body = this->world.CreateBody(&worldBodyDef);
-		body->SetTransform(b2Vec2(e.getX()/64.f, e.getY()/64.f), 0);
+		body->SetTransform(e.getPosition(), 0);
 		b2PolygonShape shape;
 		shape.SetAsBox(e.getShape()->getWidth() / 128.f, e.getShape()->getHeight() / 128.f);
 		b2Fixture* worldfix = body->CreateFixture(&shape, 0);
@@ -304,7 +304,7 @@ void ZombieScene::loadScene()
 			world.back().setVisible(true);
 			world.back().setShape(new SGE::Circle(pillar.m_radius*64.f,false));
 			b2Body* body = this->world.CreateBody(&worldBodyDef);
-			body->SetTransform(b2Vec2(world.back().getX() / 64.f, world.back().getY() / 64.f), 0);
+			body->SetTransform(b2Vec2(world.back().getXGLM() / 64.f, world.back().getYGLM() / 64.f), 0);
 			b2Fixture* worldfix = body->CreateFixture(&pillar, 0);
 			worldfix->SetFilterData(worldFilter);
 			worldfix->SetUserData(&world.back());

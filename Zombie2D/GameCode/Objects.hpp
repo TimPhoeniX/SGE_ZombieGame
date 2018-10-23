@@ -57,8 +57,8 @@ public:
 	using Reactive::Reactive;
 	virtual glm::vec2 getPositionGLM() const noexcept override;
 	virtual void setPositionGLM(float x, float y) override;
-	virtual float getX() const noexcept override;
-	virtual float getY() const noexcept override;
+	virtual float getXGLM() const noexcept override;
+	virtual float getYGLM() const noexcept override;
 };
 
 class Portal : public SGE::Reactive
@@ -109,8 +109,8 @@ public:
 
 	virtual glm::vec2 getPositionGLM() const noexcept override;
 	virtual void setPositionGLM(float x, float y) override;
-	virtual float getX() const noexcept override;
-	virtual float getY() const noexcept override;
+	virtual float getXGLM() const noexcept override;
+	virtual float getYGLM() const noexcept override;
 };
 
 bool Human::isZombified() const

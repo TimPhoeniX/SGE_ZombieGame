@@ -54,7 +54,7 @@ void MouseClickedAction::action_main() noexcept
 	glm::vec2 coords = this->mouseObject->getMouseCoords();
 	glm::vec2 worldCoords = SGE::Game::getGame()->getCamera()->screenToWorld(coords);
 	std::cout << "[Clicked] - x: " << worldCoords.x << ", y: " << worldCoords.y << '\n'; //No 
-	std::cout << "[Player ] - x: " << this->player->getX() << ", y: " << this->player->getY() << std::endl;
+	std::cout << "[Player ] - x: " << this->player->getXGLM() << ", y: " << this->player->getYGLM() << std::endl;
 
 	//NOTE: we want this action to be active forever
 }

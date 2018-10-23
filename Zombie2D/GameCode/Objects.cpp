@@ -13,12 +13,12 @@ void Player::setPositionGLM(float x, float y)
 	this->body->SetTransform(b2Vec2(x / 64.f, y / 64.f), this->body->GetAngle());
 }
 
-float Player::getX() const noexcept
+float Player::getXGLM() const noexcept
 {
 	return this->body->GetPosition().x * 64.f;
 }
 
-float Player::getY() const noexcept
+float Player::getYGLM() const noexcept
 {
 	return this->body->GetPosition().y * 64.f;
 }
@@ -92,12 +92,12 @@ void Human::setPositionGLM(float x, float y)
 	this->body->SetTransform(b2Vec2(x / 64.f, y / 64.f), this->body->GetAngle());
 }
 
-float Human::getX() const noexcept
+float Human::getXGLM() const noexcept
 {
 	return this->body->GetPosition().x * 64.f;
 }
 
-float Human::getY() const noexcept
+float Human::getYGLM() const noexcept
 {
 	return this->body->GetPosition().y * 64.f;
 }

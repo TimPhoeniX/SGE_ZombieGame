@@ -104,7 +104,7 @@ void HumanRandomMovement::randomMovement(Human* human)
 	b2Vec2 wLocal = human->wTarget + b2Vec2{ wDist, 0.f };
 	wLocal = b2Mul(b2Rot(b2Atan2(dir.y, dir.x)), wLocal);
 	b2Vec2 vel = human->getBody()->GetLinearVelocity();
-	vel += 0.016 * wLocal;
+	vel += 0.016f * wLocal;
 	vel.Normalize();
 	human->setDirection(vel);
 	vel *= human->getSpeed();
@@ -338,7 +338,7 @@ void AimPointer::performLogic()
 	b2Vec2 direction{ dir.x, dir.y };
 	direction.Normalize();
 	//std::cout << direction.x << ", " << direction.y << std::endl;
-	b2Vec2 pos{ this->aimer->getX() / 64.f, this->aimer->getY() / 64.f };
+	b2Vec2 pos{ this->aimer->getXGLM() / 64.f, this->aimer->getYGLM() / 64.f };
 	b2Vec2 target = pos + this->range* 1000.f * direction;
 	aim(pos, target);
 }
