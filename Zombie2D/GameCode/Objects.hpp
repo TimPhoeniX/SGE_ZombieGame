@@ -72,14 +72,15 @@ public:
 class Human : public SGE::Reactive
 {
 	using BodyList = std::forward_list<Human*>;
-	float speed = 2;
 	b2Vec2 direction = { 1.f,0.f };
+	float speed = 2;
 	unsigned int counter = 1;
 	unsigned int maxCount = 0;
 	bool zombified = false;
 	bool killed = false;
 	BodyList bodies;
 public:
+	b2Vec2 wTarget = { 2.f, 0.f };
 	Human(const float x, const float y);
 
 	Human(const float x, const float y, const unsigned int max);

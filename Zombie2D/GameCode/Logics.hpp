@@ -62,6 +62,9 @@ public:
 class HumanRandomMovement : public SGE::Logic
 {
 protected:
+	const float wRadius = 3.f;
+	const float wDist = 3.f;
+	const float wJitter = .5f;
 	std::vector<Human*>* humans = nullptr;
 	std::default_random_engine engine;
 	std::uniform_real_distribution<float> angle;

@@ -97,13 +97,24 @@ HumanRandomMovement::HumanRandomMovement(std::vector<Human*>* humans)
 
 void HumanRandomMovement::randomMovement(Human* human)
 {
+	b2Vec2 dir = human->getDirection();
 	if (human->getCounter() == 0)
 	{
-		b2Vec2 dir = human->getDirection();
 		dir = b2Mul(b2Rot(this->angle(this->engine)), dir);
 		human->setDirection(dir);
 		human->getBody()->SetLinearVelocity(human->getSpeed()*dir);
 	}
+	human->wTarget += { (rand() % 2000 - 1000) / 1000.f * wJitter, (rand() % 2000 - 1000) / 1000.f * wJitter };
+	human->wTarget.Normalize();
+	human->wTarget *= wRadius;
+	b2Vec2 wLocal = human->wTarget + b2Vec2{ wDist, 0.f };
+	wLocal = b2Mul(b2Rot(b2Atan2(dir.y, dir.x)), wLocal);
+	b2Vec2 vel = human->getBody()->GetLinearVelocity();
+	vel += 0.016 * wLocal;
+	vel.Normalize();
+	human->setDirection(vel);
+	vel *= human->getSpeed();
+	human->getBody()->SetLinearVelocity(vel);
 }
 
 void HumanRandomMovement::performLogic()
@@ -309,7 +320,7 @@ void AimPointer::aim(b2Vec2 pos, b2Vec2 target)
 			body->SetLinearVelocity(b2Vec2_zero);
 			body->ApplyForceToCenter(16.f*dir,true);
 			body->SetLinearDamping(2);
-			reload = 4.0f;
+			reload = 2.0f;
 			this->aim(pos, target);
 		}
 		else 

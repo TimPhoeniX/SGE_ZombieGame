@@ -69,9 +69,9 @@ void ZListener::BeginContact(b2Contact* contact)
 {
 	b2Fixture* A = contact->GetFixtureA();
 	b2Fixture* B = contact->GetFixtureB();
-	if(this->cull(A, B))
+	//if(this->cull(A, B))
 	{
-		return;
+		//return;
 	}
 	if (isCat(A, Category::Human) && isCat(B, Category::ZombieSensor))
 	{
@@ -102,9 +102,9 @@ void ZListener::EndContact(b2Contact* contact)
 {
 	b2Fixture* A = contact->GetFixtureA();
 	b2Fixture* B = contact->GetFixtureB();
-	if (this->uncull(A, B))
+	//if (this->uncull(A, B))
 	{
-		return;
+		//return;
 	}
 	if (isCat(A, Category::Human) && isCat(B, Category::ZombieSensor))
 	{
@@ -249,6 +249,7 @@ void ZombieScene::loadScene()
 		b2Fixture* worldfix = body->CreateFixture(&shape, 0);
 		worldfix->SetFilterData(worldFilter);
 		worldfix->SetUserData(&e);
+		e.setVisible(true);
 	}
 
 	SGE::Object* Dummy1 = new Image(-1000, -1000);
@@ -284,18 +285,40 @@ void ZombieScene::loadScene()
 
 	for (int i = 0; i < humans; i++)
 	{
-		free.emplace((rand() % 58 - 29) * w, (rand() % 58 - 29) * w);
+		free.emplace((rand() % (48 / 6) * 6 - 24 + rand() % 4 - 2) * w, (rand() % (48 / 6) * 6 - 24 + rand() % 4 - 2) * h);
 	}
+	
+	std::vector<std::pair <float, float>> freeList(free.begin(), free.end());
+	
+	std::random_shuffle(freeList.begin(), freeList.end());
 
-	for (auto pos: free)
+	int pillars = 20;
+
+	for (auto pos: freeList)
 	{
-		Human* temp = new Human(pos.first, pos.second, 60 + rand() % 120);
+		if(pillars > 0)
+		{
+			world.emplace_back(pos.first, pos.second, game->getGamePath() + "Resources/Textures/pillar.png");
+			b2CircleShape pillar;
+			pillar.m_radius = rand() % 10 / 10.f + 1.f;
+			world.back().setVisible(true);
+			world.back().setShape(new SGE::Circle(pillar.m_radius*64.f,false));
+			b2Body* body = this->world.CreateBody(&worldBodyDef);
+			body->SetTransform(b2Vec2(world.back().getX() / 64.f, world.back().getY() / 64.f), 0);
+			b2Fixture* worldfix = body->CreateFixture(&pillar, 0);
+			worldfix->SetFilterData(worldFilter);
+			worldfix->SetUserData(&world.back());
+			--pillars;
+			continue;
+		}
+		Human* temp = new Human(pos.first, pos.second, 120 + rand() % 180);
 		game->textureObject(temp, "Resources/Textures/circle.png");
 		this->addReactive(temp,&humanBodyDef);
 		temp->setPosition(pos.first, pos.second);
 		this->humans.push_back(temp);
 		temp->addFixture(sensorFixture)->SetFilterData(humanSensorFilter);
 		temp->addFixture(humanShape)->SetFilterData(humanFilter);
+		temp->setVisible(true);
 	}
 
 	this->zombify(this->humans.at(0));
