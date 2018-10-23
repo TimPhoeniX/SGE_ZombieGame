@@ -16,7 +16,8 @@ if (NOT INCLUDE_ENGINE_PROJECT)
 	target_link_libraries(${PROJECT_NAME}
 		${SGE_LIBRARIES}
 		${Boost_LIBRARIES}
-		${SDL2_LIBRARY}
+		SDL2::SDL2-static
+		SDL2::SDL2main
 		${GLEW_LIBRARIES}
 		${OPENGL_LIBRARIES}
 		${GLM_LIBRARIES})
@@ -24,10 +25,11 @@ else()
 	target_link_libraries(${PROJECT_NAME}
 
 		${Boost_LIBRARIES}
-		${SDL2_LIBRARY}
 		${GLEW_LIBRARIES}
 		${OPENGL_LIBRARIES}
 		${GLM_LIBRARIES}
+		SDL2::SDL2-static
+		SDL2::SDL2main
 
 		Action
 		ActionHandler
