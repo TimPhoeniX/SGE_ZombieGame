@@ -295,11 +295,11 @@ void AimPointer::aim(b2Vec2 pos, b2Vec2 target)
 			if(human->isZombified())
 			{
 				++this->counter;
-				human->texture = ZombieScene::deadZombieTexture;
+				human->setTexture(ZombieScene::deadZombieTexture);
 			}
 			else
 			{
-				human->texture = ZombieScene::deadHumanTexture;
+				human->setTexture(ZombieScene::deadHumanTexture);
 			}
 			b2Body* body = callback.fixture->GetBody();
 			for(b2Fixture* f = body->GetFixtureList(), *n = f; f; f=n)

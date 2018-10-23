@@ -191,7 +191,7 @@ void ZombieScene::zombify(Human* human)
 		temp = next->GetNext();
 		body->DestroyFixture(next);
 	}
-	human->texture = zombieTexture;
+	human->setTexture(zombieTexture);
 	human->setSpeed(3);
 	human->addFixture(sensorFixture)->SetFilterData(zombieSensorFilter);
 	human->addFixture(humanShape)->SetFilterData(zombieFilter);
@@ -228,16 +228,16 @@ void ZombieScene::loadScene()
 	}*/
 
 	//Boundaries
-	SGE::Rectangle* horizontal = new SGE::Rectangle(60 * 64, 64, false);
-	SGE::Rectangle* vertical = new SGE::Rectangle(64, 61 * 64, false);
+	SGE::Rectangle* horizontal = new SGE::Rectangle(60.f * 64.f, 64.f, false);
+	SGE::Rectangle* vertical = new SGE::Rectangle(64.f, 61.f * 64.f, false);
 
-	world.emplace_back(-30.5f, 0, game->getGamePath() + "Resources/Textures/light_bricks.png");
+	world.emplace_back(-30.5f, 0.f, game->getGamePath() + "Resources/Textures/light_bricks.png");
 	world.back().setShape(vertical);
-	world.emplace_back(30.5f, 0, game->getGamePath() + "Resources/Textures/light_bricks.png");
+	world.emplace_back(30.5f, 0.f, game->getGamePath() + "Resources/Textures/light_bricks.png");
 	world.back().setShape(vertical);
-	world.emplace_back(0, 30, game->getGamePath() + "Resources/Textures/light_bricks.png");
+	world.emplace_back(0.f, 30.f, game->getGamePath() + "Resources/Textures/light_bricks.png");
 	world.back().setShape(horizontal);
-	world.emplace_back(0, -30 , game->getGamePath() + "Resources/Textures/light_bricks.png");
+	world.emplace_back(0.f, -30.f , game->getGamePath() + "Resources/Textures/light_bricks.png");
 	world.back().setShape(horizontal);
 
 	for(SGE::WorldElement& e: this->getLevel().getWorld())
@@ -254,11 +254,11 @@ void ZombieScene::loadScene()
 
 	SGE::Object* Dummy1 = new Image(-1000, -1000);
 	game->textureObject(Dummy1, "Resources/Textures/deadzombie.png");
-	deadZombieTexture = Dummy1->texture;
+	deadZombieTexture = Dummy1->getTexture();
 	this->addObject(Dummy1);
 	SGE::Object* Dummy2 = new Image(-1000, -1000);
 	game->textureObject(Dummy2, "Resources/Textures/deadhuman.png");
-	deadHumanTexture = Dummy2->texture;
+	deadHumanTexture = Dummy2->getTexture();
 	this->addObject(Dummy2);
 
 	SGE::Camera2d* camera = game->getCamera();
@@ -285,7 +285,7 @@ void ZombieScene::loadScene()
 
 	for (int i = 0; i < humans; i++)
 	{
-		free.emplace((rand() % (48 / 6) * 6 - 24 + rand() % 4 - 2) * w, (rand() % (48 / 6) * 6 - 24 + rand() % 4 - 2) * h);
+		free.emplace((rand() % (48 / 6) * 6.f - 24 + rand() % 4 - 2) * w, (rand() % (48 / 6) * 6.f - 24 + rand() % 4 - 2) * h);
 	}
 	
 	std::vector<std::pair <float, float>> freeList(free.begin(), free.end());
@@ -298,7 +298,7 @@ void ZombieScene::loadScene()
 	{
 		if(pillars > 0)
 		{
-			world.emplace_back(pos.first, pos.second, game->getGamePath() + "Resources/Textures/pillar.png");
+			world.emplace_back(pos.first/64.f, pos.second/64.f, game->getGamePath() + "Resources/Textures/pillar.png");
 			b2CircleShape pillar;
 			pillar.m_radius = rand() % 10 / 10.f + 1.f;
 			world.back().setVisible(true);
@@ -323,7 +323,7 @@ void ZombieScene::loadScene()
 
 	this->zombify(this->humans.at(0));
 	game->textureObject(this->humans.at(0), "Resources/Textures/zombie.png");
-	zombieTexture = this->humans.at(0)->texture;
+	zombieTexture = this->humans.at(0)->getTexture();
 	this->humans.at(0)->Zombify();
 
 	this->addLogic(new HumanMovement(&this->humans,std::bind(&ZombieScene::zombify,this,std::placeholders::_1),&this->world));
@@ -334,13 +334,13 @@ void ZombieScene::loadScene()
 	this->addObject(pointer);
 	this->game->textureObject(pointer, "Resources/Textures/pointer.png");
 	
-	this->addLogic(new AimPointer(&this->world, player, pointer, mouse, camera, this->killCount, 8));
+	this->addLogic(new AimPointer(&this->world, player, pointer, mouse, camera, this->killCount, 8.f));
 	this->addLogic(new WinCondition(this->zombieCount, this->killCount, endScene));
 
 	//Puts player on top
 	game->textureObject(player, "Resources/Textures/player.png");
 	this->addReactive(player, &humanBodyDef);
-	player->setPositionGLM(200, 200);
+	player->setPositionGLM(200.f, 200.f);
 	//Will hijack player for now
 	b2PolygonShape camBox;
 	b2FixtureDef camFixtureDef;
