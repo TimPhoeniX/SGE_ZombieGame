@@ -62,3 +62,4 @@ setup
 
 
 conanbuildinfo.cmake
+conaninfo.txt
