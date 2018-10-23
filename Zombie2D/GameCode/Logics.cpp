@@ -52,8 +52,8 @@ void BiCollider::performLogic()
 {
 	SGE::Circle* aCircle = reinterpret_cast<SGE::Circle*>(this->a->getShape());
 	SGE::Circle* bCircle = reinterpret_cast<SGE::Circle*>(this->b->getShape());
-	glm::vec2 selfPos = this->a->getPosition();
-	glm::vec2 oponPos = this->b->getPosition();
+	glm::vec2 selfPos = this->a->getPositionGLM();
+	glm::vec2 oponPos = this->b->getPositionGLM();
 	glm::vec2 pen = selfPos - oponPos;
 	float distance = glm::length(pen);
 	float radiuses = aCircle->getRadius() + bCircle->getRadius();
@@ -98,12 +98,6 @@ HumanRandomMovement::HumanRandomMovement(std::vector<Human*>* humans)
 void HumanRandomMovement::randomMovement(Human* human)
 {
 	b2Vec2 dir = human->getDirection();
-	if (human->getCounter() == 0)
-	{
-		dir = b2Mul(b2Rot(this->angle(this->engine)), dir);
-		human->setDirection(dir);
-		human->getBody()->SetLinearVelocity(human->getSpeed()*dir);
-	}
 	human->wTarget += { (rand() % 2000 - 1000) / 1000.f * wJitter, (rand() % 2000 - 1000) / 1000.f * wJitter };
 	human->wTarget.Normalize();
 	human->wTarget *= wRadius;
@@ -226,8 +220,8 @@ void SnapCamera::performLogic()
 	glm::vec2 move = {0, 0};
 	if (!this->snapped)
 	{
-		move = this->snapTo->getPosition();
-		this->cam->setPosition(move.x, move.y); //Replace with action, i.e. GoTo
+		move = this->snapTo->getPositionGLM();
+		this->cam->setPositionGLM(move.x, move.y); //Replace with action, i.e. GoTo
 	}
 	else
 	{
@@ -325,12 +319,12 @@ void AimPointer::aim(b2Vec2 pos, b2Vec2 target)
 		}
 		else 
 		{
-			this->pointer->setPosition(callback.point.x * 64.f, callback.point.y * 64.f);
+			this->pointer->setPositionGLM(callback.point.x * 64.f, callback.point.y * 64.f);
 		}
 	}
 	else
 	{
-		this->pointer->setPosition(target.x * 64.f, target.y * 64.f);
+		this->pointer->setPositionGLM(target.x * 64.f, target.y * 64.f);
 	}
 }
 
@@ -340,7 +334,7 @@ void AimPointer::performLogic()
 	{
 		reload -= SGE::delta_time;
 	}
-	auto dir = this->cam->screenToWorld(this->mouse->getMouseCoords()) - this->aimer->getPosition();
+	auto dir = this->cam->screenToWorld(this->mouse->getMouseCoords()) - this->aimer->getPositionGLM();
 	b2Vec2 direction{ dir.x, dir.y };
 	direction.Normalize();
 	//std::cout << direction.x << ", " << direction.y << std::endl;

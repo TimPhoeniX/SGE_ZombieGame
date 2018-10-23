@@ -2,13 +2,13 @@
 
 #include <Object/Shape/sge_shape_rectangle.hpp>
 
-glm::vec2 Player::getPosition() const noexcept
+glm::vec2 Player::getPositionGLM() const noexcept
 {
 	auto bp = this->body->GetPosition();
 	return glm::vec2(bp.x * 64.f, bp.y * 64.f);
 }
 
-void Player::setPosition(float x, float y)
+void Player::setPositionGLM(float x, float y)
 {
 	this->body->SetTransform(b2Vec2(x / 64.f, y / 64.f), this->body->GetAngle());
 }
@@ -81,13 +81,13 @@ bool Human::isDead() const
 	return this->killed;
 }
 
-glm::vec2 Human::getPosition() const noexcept
+glm::vec2 Human::getPositionGLM() const noexcept
 {
 	auto bp = this->body->GetPosition();
 	return glm::vec2(bp.x * 64.f, bp.y * 64.f);
 }
 
-void Human::setPosition(float x, float y)
+void Human::setPositionGLM(float x, float y)
 {
 	this->body->SetTransform(b2Vec2(x / 64.f, y / 64.f), this->body->GetAngle());
 }

@@ -314,7 +314,7 @@ void ZombieScene::loadScene()
 		Human* temp = new Human(pos.first, pos.second, 120 + rand() % 180);
 		game->textureObject(temp, "Resources/Textures/circle.png");
 		this->addReactive(temp,&humanBodyDef);
-		temp->setPosition(pos.first, pos.second);
+		temp->setPositionGLM(pos.first, pos.second);
 		this->humans.push_back(temp);
 		temp->addFixture(sensorFixture)->SetFilterData(humanSensorFilter);
 		temp->addFixture(humanShape)->SetFilterData(humanFilter);
@@ -340,7 +340,7 @@ void ZombieScene::loadScene()
 	//Puts player on top
 	game->textureObject(player, "Resources/Textures/player.png");
 	this->addReactive(player, &humanBodyDef);
-	player->setPosition(200, 200);
+	player->setPositionGLM(200, 200);
 	//Will hijack player for now
 	b2PolygonShape camBox;
 	b2FixtureDef camFixtureDef;

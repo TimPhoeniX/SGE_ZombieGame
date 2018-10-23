@@ -10,7 +10,7 @@
     Boost/1.Y.Z
     SDL2/2.Y.Z
     glew/2.Y.Z
-    glm/master
+    glm/0.9.8.1
 
 [options]
 
@@ -27,7 +27,7 @@
     Boost/1.64.0@conan/stable:ee5dab950b6ea94ae953b93c55343e98c2ec39df
     SDL2/2.0.5@lasote/ci:5873ceb24abc9238c6bd91b567a277ab595c8b62
     glew/2.0.0-1@lasote/vcpkg:63da998e3642b50bee33f4449826b2d623661505
-    glm/master@g-truc/stable:5ab84d6acfe1f23c4fae0ab88f26e3a396351ac9
+    glm/0.9.8.1@lasote/vcpkg:63da998e3642b50bee33f4449826b2d623661505
     zlib/1.2.8@lasote/stable:63da998e3642b50bee33f4449826b2d623661505
 
 [full_options]

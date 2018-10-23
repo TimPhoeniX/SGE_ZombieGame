@@ -55,8 +55,8 @@ class Player : public SGE::Reactive
 {
 public:
 	using Reactive::Reactive;
-	virtual glm::vec2 getPosition() const noexcept override;
-	virtual void setPosition(float x, float y) override;
+	virtual glm::vec2 getPositionGLM() const noexcept override;
+	virtual void setPositionGLM(float x, float y) override;
 	virtual float getX() const noexcept override;
 	virtual float getY() const noexcept override;
 };
@@ -107,8 +107,8 @@ public:
 	
 	bool isDead() const;
 
-	virtual glm::vec2 getPosition() const noexcept override;
-	virtual void setPosition(float x, float y) override;
+	virtual glm::vec2 getPositionGLM() const noexcept override;
+	virtual void setPositionGLM(float x, float y) override;
 	virtual float getX() const noexcept override;
 	virtual float getY() const noexcept override;
 };

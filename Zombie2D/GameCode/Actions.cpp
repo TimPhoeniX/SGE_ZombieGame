@@ -10,7 +10,7 @@ GOTO::GOTO(SGE::Object* object): Action(false), object(object)
 
 void GOTO::action_main() noexcept
 {
-	this->object->setPosition(200, 200);
+	this->object->setPositionGLM(200, 200);
 	//NOTE: we don't want this action to be active forever
 }
 
