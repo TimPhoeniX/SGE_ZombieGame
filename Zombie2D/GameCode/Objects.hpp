@@ -6,9 +6,9 @@
 
 #include <Object/sge_object.hpp>
 #include <Object/Reactive/sge_reactive.hpp>
-#include <Object/Shape/sge_shape_circle.hpp>
+#include <Object/Shape/sge_shape.hpp>
 
-enum class Category : unsigned short
+enum class Category: unsigned short
 {
 	Player = 1 << 0,
 	Human = 1 << 1,
@@ -47,11 +47,11 @@ inline bool isCat(b2Fixture* fixture, Category cat)
 
 inline SGE::Shape* getCircle()
 {
-	static SGE::Circle c(32, false);
-	return &c;
+	static SGE::Shape* circle = SGE::Shape::Circle(0.5f);
+	return circle;
 }
 
-class Player : public SGE::Reactive
+class Player: public SGE::Reactive
 {
 public:
 	using Reactive::Reactive;
@@ -61,7 +61,7 @@ public:
 	virtual float getYGLM() const noexcept override;
 };
 
-class Portal : public SGE::Reactive
+class Portal: public SGE::Reactive
 {
 public:
 	using SGE::Reactive::Reactive;
@@ -69,10 +69,10 @@ public:
 	Portal(float x, float y);
 };
 
-class Human : public SGE::Reactive
+class Human: public SGE::Reactive
 {
 	using BodyList = std::forward_list<Human*>;
-	b2Vec2 direction = { 1.f,0.f };
+	b2Vec2 direction = {1.f,0.f};
 	float speed = 2;
 	unsigned int counter = 1;
 	unsigned int maxCount = 0;
@@ -80,7 +80,7 @@ class Human : public SGE::Reactive
 	bool killed = false;
 	BodyList bodies;
 public:
-	b2Vec2 wTarget = { 2.f, 0.f };
+	b2Vec2 wTarget = {2.f, 0.f};
 	Human(const float x, const float y);
 
 	Human(const float x, const float y, const unsigned int max);
@@ -96,7 +96,7 @@ public:
 	float getSpeed() const;
 
 	void setSpeed(float s);
-	
+
 	BodyList& getBodies();
 
 	void Zombify();
@@ -104,7 +104,7 @@ public:
 	inline bool isZombified() const;
 
 	void kill();
-	
+
 	bool isDead() const;
 
 	virtual glm::vec2 getPositionGLM() const noexcept override;
@@ -118,13 +118,13 @@ bool Human::isZombified() const
 	return this->zombified;
 }
 
-class Image : public SGE::Object
+class Image: public SGE::Object
 {
 public:
 	using Object::Object;
 };
 
-class Pointer : public SGE::Object
+class Pointer: public SGE::Object
 {
 public:
 	Pointer();

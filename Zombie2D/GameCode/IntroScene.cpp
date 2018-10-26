@@ -1,6 +1,6 @@
 ﻿#include "IntroScene.hpp"
 
-#include <Object/Shape/sge_shape_rectangle.hpp>
+#include <Object/Shape/sge_shape.hpp>
 #include <Game/sge_game.hpp>
 #include <Game/Director/sge_director.hpp>
 #include "Objects.hpp"
@@ -8,13 +8,12 @@
 #include "Actions.hpp"
 
 
-IntroScene::IntroScene(SGE::Scene* next, const char* path) : path(path), next(next)
-{
-}
+IntroScene::IntroScene(SGE::Scene* next, const char* path): path(path), next(next)
+{}
 
 void IntroScene::loadScene()
 {
-	auto o = new Image(0, 0, new SGE::Rectangle(1024, 768, true));
+	auto o = new Image(0, 0, SGE::Shape::Rectangle(1024.f / 64.f, 768.f / 64.f, true));
 	auto g = SGE::Game::getGame();
 	o->setVisible(true);
 	o->setDrawable(true);
@@ -26,12 +25,10 @@ void IntroScene::loadScene()
 }
 
 IntroScene::~IntroScene()
-{
-}
+{}
 
 void IntroScene::finalize()
-{
-}
+{}
 
 void IntroScene::onDraw()
 {
@@ -43,7 +40,7 @@ void IntroScene::onDraw()
 
 void EndScene::loadScene()
 {
-	auto o = new Image(0, 0, new SGE::Rectangle(1024, 768, true));
+	auto o = new Image(0, 0, SGE::Shape::Rectangle(1024.f / 64.f, 768.f / 64.f, true));
 	o->setVisible(true);
 	o->setDrawable(true);
 	auto g = SGE::Game::getGame();

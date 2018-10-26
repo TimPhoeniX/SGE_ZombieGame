@@ -6,7 +6,7 @@
 #include <IO/Mouse/sge_mouse.hpp>
 #include <Game/sge_game.hpp>
 
-class GOTO : public SGE::Action
+class GOTO: public SGE::Action
 {
 	SGE::Object* object = nullptr;
 
@@ -20,7 +20,7 @@ public:
 	virtual void action_ends() noexcept override;
 };
 
-class PortalAction : public SGE::Action
+class PortalAction: public SGE::Action
 {
 public:
 	PortalAction();
@@ -32,7 +32,7 @@ public:
 	virtual void action_ends() override;
 };
 
-class LogicSwitch : public SGE::Action
+class LogicSwitch: public SGE::Action
 {
 	SGE::Logic* logic = nullptr;
 
@@ -46,7 +46,7 @@ public:
 	void action_ends() override;
 };
 
-class MouseClickedAction : public SGE::Action
+class MouseClickedAction: public SGE::Action
 {
 	SGE::MouseObject* mouseObject = nullptr;
 	SGE::Object* player = nullptr;
@@ -61,7 +61,7 @@ public:
 	virtual void action_main() noexcept override;
 };
 
-class Load : public SGE::Action
+class Load: public SGE::Action
 {
 	SGE::Scene* nextScene = nullptr;
 public:
@@ -69,7 +69,7 @@ public:
 	void action_begin() override;
 	void action_main() override;
 	void action_ends() override;
-	
+
 };
 
 #endif

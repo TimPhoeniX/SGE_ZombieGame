@@ -7,7 +7,7 @@
 
 #include "Objects.hpp"
 
-class CullingListener : public b2ContactListener
+class CullingListener: public b2ContactListener
 {
 protected:
 	SGE::Camera2d* camera = SGE::Game::getGame()->getCamera();
@@ -17,10 +17,10 @@ protected:
 public:
 	virtual void BeginContact(b2Contact* contact) override;
 	virtual void EndContact(b2Contact* contact) override;
-	
+
 };
 
-class ZListener : public CullingListener
+class ZListener: public CullingListener
 {
 public:
 	virtual void BeginContact(b2Contact* contact) override;
@@ -28,7 +28,7 @@ public:
 	virtual void EndContact(b2Contact* contact) override;
 };
 
-class ZombieScene : public SGE::Box2DScene
+class ZombieScene: public SGE::Box2DScene
 {
 protected:
 	SGE::Game* game = nullptr;

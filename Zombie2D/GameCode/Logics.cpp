@@ -7,7 +7,7 @@
 #include <glm/ext.hpp>
 
 #include <Action/Actions/sge_action_move.hpp>
-#include <Object/Shape/sge_shape_circle.hpp>
+#include <Object/Shape/sge_shape.hpp>
 #include <IO/KeyboardState/sge_keyboard_state.hpp>
 #include <Utils/Timing/sge_fps_limiter.hpp>
 #include <Box2D/Dynamics/b2World.h>
@@ -17,7 +17,7 @@
 
 float32 CheckWall::ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction)
 {
-	if(isCat(fixture,Category::Level))
+	if(isCat(fixture, Category::Level))
 	{
 		this->hitWall = true;
 		return 0.f;
@@ -27,17 +27,16 @@ float32 CheckWall::ReportFixture(b2Fixture* fixture, const b2Vec2& point, const 
 
 SimpleMove::SimpleMove(SGE::Reactive* object, const float speed, const SGE::Key up, const SGE::Key down, const SGE::Key left, const SGE::Key right)
 	: Logic(SGE::LogicPriority::Highest), object(object), speed(speed), up(up), down(down), left(left), right(right)
-{
-}
+{}
 
 void SimpleMove::performLogic()
 {
 	b2Vec2 move = b2Vec2_zero;
-	if (isPressed(this->up)) move.y += 1;
-	if (isPressed(this->down)) move.y -= 1;
-	if (isPressed(this->right)) move.x += 1;
-	if (isPressed(this->left)) move.x -= 1;
-	if (b2Vec2_zero != move)
+	if(isPressed(this->up)) move.y += 1;
+	if(isPressed(this->down)) move.y -= 1;
+	if(isPressed(this->right)) move.x += 1;
+	if(isPressed(this->left)) move.x -= 1;
+	if(b2Vec2_zero != move)
 	{
 		move.Normalize();
 		object->getBody()->SetLinearVelocity(this->speed * move);
@@ -45,20 +44,17 @@ void SimpleMove::performLogic()
 }
 
 BiCollider::BiCollider(SGE::Object* a, SGE::Object* b): Logic(SGE::LogicPriority::Highest), a(a), b(b)
-{
-}
+{}
 
 void BiCollider::performLogic()
 {
-	SGE::Circle* aCircle = reinterpret_cast<SGE::Circle*>(this->a->getShape());
-	SGE::Circle* bCircle = reinterpret_cast<SGE::Circle*>(this->b->getShape());
 	glm::vec2 selfPos = this->a->getPositionGLM();
 	glm::vec2 oponPos = this->b->getPositionGLM();
 	glm::vec2 pen = selfPos - oponPos;
 	float distance = glm::length(pen);
-	float radiuses = aCircle->getRadius() + bCircle->getRadius();
+	float radiuses = this->a->getShape()->getRadius() + this->b->getShape()->getRadius();
 
-	if (distance < radiuses)
+	if(distance < radiuses)
 	{
 		float move = (radiuses - distance) * 0.5;
 		pen = glm::normalize(pen) * move;
@@ -68,12 +64,11 @@ void BiCollider::performLogic()
 }
 
 PortalLogic::PortalLogic(SGE::Object* portal, SGE::Object* player): Collide(SGE::LogicPriority::Highest), portal(portal), player(player)
-{
-}
+{}
 
 void PortalLogic::performLogic()
 {
-	if (this->collideWithDifferentShape(this->portal, this->player))
+	if(this->collideWithDifferentShape(this->portal, this->player))
 	{
 		try
 		{
@@ -83,17 +78,16 @@ void PortalLogic::performLogic()
 			this->sendAction(moveAction);
 			this->sendAction(new PortalAction);
 		}
-		catch (const std::bad_cast& exception)
+		catch(const std::bad_cast& exception)
 		{
 			std::cerr << exception.what() << std::endl;
 		}
 	}
 }
 
-HumanRandomMovement::HumanRandomMovement(std::vector<Human*>* humans) 
+HumanRandomMovement::HumanRandomMovement(std::vector<Human*>* humans)
 	: Logic(SGE::LogicPriority::Mid), humans(humans), angle(glm::radians(-90.f), glm::radians(90.f))
-{
-}
+{}
 
 void HumanRandomMovement::randomMovement(Human* human)
 {
@@ -101,7 +95,7 @@ void HumanRandomMovement::randomMovement(Human* human)
 	human->wTarget += { (rand() % 2000 - 1000) / 1000.f * wJitter, (rand() % 2000 - 1000) / 1000.f * wJitter };
 	human->wTarget.Normalize();
 	human->wTarget *= wRadius;
-	b2Vec2 wLocal = human->wTarget + b2Vec2{ wDist, 0.f };
+	b2Vec2 wLocal = human->wTarget + b2Vec2{wDist, 0.f};
 	wLocal = b2Mul(b2Rot(b2Atan2(dir.y, dir.x)), wLocal);
 	b2Vec2 vel = human->getBody()->GetLinearVelocity();
 	vel += 0.016f * wLocal;
@@ -113,7 +107,7 @@ void HumanRandomMovement::randomMovement(Human* human)
 
 void HumanRandomMovement::performLogic()
 {
-	for (auto human : *humans)
+	for(auto human : *humans)
 	{
 		if(!human->isDead())
 		{
@@ -122,30 +116,29 @@ void HumanRandomMovement::performLogic()
 	}
 }
 
-HumanMovement::HumanMovement(std::vector<Human*>* humans, ZombifyFunc fun, b2World* world) : HumanRandomMovement(humans), zombifier(fun), world(world)
-{
-}
+HumanMovement::HumanMovement(std::vector<Human*>* humans, ZombifyFunc fun, b2World* world): HumanRandomMovement(humans), zombifier(fun), world(world)
+{}
 
 void HumanMovement::zombieMovement(Human* zombie)
 {
 	auto& humans = zombie->getBodies();
-	if (humans.empty())
+	if(humans.empty())
 	{
 		this->randomMovement(zombie);
 	}
 	else
 	{
 		const b2Vec2 pos = zombie->getBody()->GetPosition();
-		b2Vec2 direction = { 0,0 };
-		b2Vec2 humanPos = { 0,0 };
+		b2Vec2 direction = {0,0};
+		b2Vec2 humanPos = {0,0};
 		float maxSqrDist = 36.f;
 		float sqrDist = 0.f;
 		CheckWall los;
-		for (auto* human : humans)
+		for(auto* human : humans)
 		{
 			humanPos = human->getBody()->GetPosition();
 			sqrDist = (pos - humanPos).LengthSquared();
-			if (sqrDist < maxSqrDist)
+			if(sqrDist < maxSqrDist)
 			{
 				this->world->RayCast(&los, pos, humanPos);
 				if(los.hitWall)
@@ -153,7 +146,7 @@ void HumanMovement::zombieMovement(Human* zombie)
 				direction = human->getBody()->GetPosition() - pos;
 			}
 		}
-		if(direction!=b2Vec2_zero)
+		if(direction != b2Vec2_zero)
 		{
 			direction.Normalize();
 			zombie->getBody()->SetLinearVelocity(zombie->getSpeed() * direction);
@@ -168,15 +161,15 @@ void HumanMovement::zombieMovement(Human* zombie)
 void HumanMovement::humanMovement(Human* human)
 {
 	auto& zombies = human->getBodies();
-	if (zombies.empty())
+	if(zombies.empty())
 	{
 		this->randomMovement(human);
 	}
 	else
 	{
 		const b2Vec2 pos = human->getBody()->GetPosition();
-		b2Vec2 direction = { 0,0 };
-		for (auto* zombie : zombies)
+		b2Vec2 direction = {0,0};
+		for(auto* zombie : zombies)
 		{
 			direction += zombie->getBody()->GetPosition() - pos;
 		}
@@ -187,11 +180,11 @@ void HumanMovement::humanMovement(Human* human)
 
 void HumanMovement::performLogic()
 {
-	for (auto human : *humans)
+	for(auto human : *humans)
 	{
 		if(human->isDead())
 			continue;
-		if(isCat(human->getBody()->GetFixtureList(),Category::Human))
+		if(isCat(human->getBody()->GetFixtureList(), Category::Human))
 		{
 			if(human->isZombified())
 			{
@@ -211,31 +204,29 @@ void HumanMovement::performLogic()
 }
 
 SnapCamera::SnapCamera(const float speed, const SGE::Key up, const SGE::Key down, const SGE::Key left, const SGE::Key right, const SGE::Key snapKey, SGE::Object* snapTo, SGE::Camera2d* cam): Logic(SGE::LogicPriority::Highest), speed(speed), up(up), down(down), left(left), right(right), snapKey(snapKey), snapTo(snapTo), cam(cam)
-{
-}
+{}
 
 void SnapCamera::performLogic()
 {
 	this->snapped = SGE::isPressed(snapKey); //We need to be able to send signals to actions, like sending actions to objects
 	glm::vec2 move = {0, 0};
-	if (!this->snapped)
+	if(!this->snapped)
 	{
 		move = this->snapTo->getPositionGLM();
 		this->cam->setPositionGLM(move.x, move.y); //Replace with action, i.e. GoTo
 	}
 	else
 	{
-		if (SGE::isPressed(this->up)) move.y += this->speed;
-		if (SGE::isPressed(this->down)) move.y -= this->speed;
-		if (SGE::isPressed(this->right)) move.x += this->speed;
-		if (SGE::isPressed(this->left)) move.x -= this->speed;
+		if(SGE::isPressed(this->up)) move.y += this->speed;
+		if(SGE::isPressed(this->down)) move.y -= this->speed;
+		if(SGE::isPressed(this->right)) move.x += this->speed;
+		if(SGE::isPressed(this->left)) move.x -= this->speed;
 		this->sendAction(new SGE::ACTION::Move(this->cam, move.x, move.y, true));
 	}
 }
 
-Timer::Timer(float time, SGE::Action* action) : Logic(SGE::LogicPriority::Low), time(time), action(action)
-{
-}
+Timer::Timer(float time, SGE::Action* action): Logic(SGE::LogicPriority::Low), time(time), action(action)
+{}
 
 void Timer::performLogic()
 {
@@ -250,13 +241,12 @@ void Timer::performLogic()
 	}
 }
 
-OnKey::OnKey(SGE::Key key, SGE::Scene* scene) : Logic(SGE::LogicPriority::Low), key(key), scene(scene)
-{
-}
+OnKey::OnKey(SGE::Key key, SGE::Scene* scene): Logic(SGE::LogicPriority::Low), key(key), scene(scene)
+{}
 
 void OnKey::performLogic()
 {
-	if (SGE::isPressed(this->key))
+	if(SGE::isPressed(this->key))
 	{
 		this->sendAction(new Load(scene));
 	}
@@ -287,8 +277,8 @@ void AimPointer::aim(b2Vec2 pos, b2Vec2 target)
 	this->world->RayCast(&callback, pos, target);
 	if(callback.hit)
 	{	//TODO code isMouseButtonPressed or sth like that.
-		if (reload < 0.f && (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT))
-			&& (isCat(callback.fixture,Category::Human) || isCat(callback.fixture,Category::Zombie)))
+		if(reload < 0.f && (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT))
+		   && (isCat(callback.fixture, Category::Human) || isCat(callback.fixture, Category::Zombie)))
 		{
 			Human* human = reinterpret_cast<Human*>(callback.fixture->GetUserData());
 			human->kill();
@@ -302,7 +292,7 @@ void AimPointer::aim(b2Vec2 pos, b2Vec2 target)
 				human->setTexture(ZombieScene::deadHumanTexture);
 			}
 			b2Body* body = callback.fixture->GetBody();
-			for(b2Fixture* f = body->GetFixtureList(), *n = f; f; f=n)
+			for(b2Fixture* f = body->GetFixtureList(), *n = f; f; f = n)
 			{
 				n = f->GetNext();
 				if(f->IsSensor())
@@ -312,12 +302,12 @@ void AimPointer::aim(b2Vec2 pos, b2Vec2 target)
 			b2Vec2 dir = (target - pos);
 			dir.Normalize();
 			body->SetLinearVelocity(b2Vec2_zero);
-			body->ApplyForceToCenter(16.f*dir,true);
+			body->ApplyForceToCenter(16.f*dir, true);
 			body->SetLinearDamping(2);
 			reload = 2.0f;
 			this->aim(pos, target);
 		}
-		else 
+		else
 		{
 			this->pointer->setPositionGLM(callback.point.x * 64.f, callback.point.y * 64.f);
 		}
@@ -330,23 +320,24 @@ void AimPointer::aim(b2Vec2 pos, b2Vec2 target)
 
 void AimPointer::performLogic()
 {
-	if (reload > 0.f)
+	if(reload > 0.f)
 	{
 		reload -= SGE::delta_time;
 	}
 	auto dir = this->cam->screenToWorld(this->mouse->getMouseCoords()) - this->aimer->getPositionGLM();
-	b2Vec2 direction{ dir.x, dir.y };
+	b2Vec2 direction{dir.x, dir.y};
 	direction.Normalize();
+	auto body = this->aimer->getBody();
+	body->SetTransform(body->GetPosition(), direction.Orientation());
 	//std::cout << direction.x << ", " << direction.y << std::endl;
-	b2Vec2 pos{ this->aimer->getXGLM() / 64.f, this->aimer->getYGLM() / 64.f };
+	b2Vec2 pos{this->aimer->getXGLM() / 64.f, this->aimer->getYGLM() / 64.f};
 	b2Vec2 target = pos + this->range* 1000.f * direction;
 	aim(pos, target);
 }
 
 WinCondition::WinCondition(size_t& zombies, size_t& killedZombies, SGE::Scene* endGame)
 	: Logic(SGE::LogicPriority::Low), zombies(zombies), killedZombies(killedZombies), endGame(endGame)
-{
-}
+{}
 
 void WinCondition::performLogic()
 {

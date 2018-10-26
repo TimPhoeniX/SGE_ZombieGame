@@ -4,7 +4,7 @@
 #include <string>
 #include <Scene/sge_scene.hpp>
 
-class IntroScene : public SGE::Scene
+class IntroScene: public SGE::Scene
 {
 protected:
 	std::string path;

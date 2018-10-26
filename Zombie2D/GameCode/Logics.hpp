@@ -14,17 +14,18 @@
 
 #include "Objects.hpp"
 
-namespace SGE {
+namespace SGE
+{
 	class Scene;
 }
 
-struct CheckWall : public b2RayCastCallback
+struct CheckWall: public b2RayCastCallback
 {
 	bool hitWall = false;
 	virtual float32 ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction) override;
 };
 
-class SimpleMove : public SGE::Logic
+class SimpleMove: public SGE::Logic
 {
 	float speed = 0;
 	const SGE::Key up;
@@ -37,7 +38,7 @@ public:
 	void performLogic() override;
 };
 
-class BiCollider : public SGE::Logic
+class BiCollider: public SGE::Logic
 {
 	SGE::Object* a = nullptr;
 	SGE::Object* b = nullptr;
@@ -48,7 +49,7 @@ public:
 	virtual void performLogic() override;
 };
 
-class PortalLogic : public SGE::Logics::Collide
+class PortalLogic: public SGE::Logics::Collide
 {
 	SGE::Object* portal = nullptr;
 	SGE::Object* player = nullptr;
@@ -59,7 +60,7 @@ public:
 	virtual void performLogic() override;
 };
 
-class HumanRandomMovement : public SGE::Logic
+class HumanRandomMovement: public SGE::Logic
 {
 protected:
 	const float wRadius = 3.f;
@@ -76,7 +77,7 @@ public:
 	virtual void performLogic() override;
 };
 
-class HumanMovement : public HumanRandomMovement
+class HumanMovement: public HumanRandomMovement
 {
 	using ZombifyFunc = std::function<void(Human*)>;
 protected:
@@ -90,7 +91,7 @@ public:
 	virtual void performLogic() override;
 };
 
-class SnapCamera : public SGE::Logic
+class SnapCamera: public SGE::Logic
 {
 	const float speed = 0;
 	const SGE::Key up, down, left, right, snapKey;
@@ -106,7 +107,7 @@ public:
 	void performLogic() override;
 };
 
-class Timer : public SGE::Logic
+class Timer: public SGE::Logic
 {
 	float time = .0f;
 	SGE::Action* action = nullptr;
@@ -115,7 +116,7 @@ public:
 	void performLogic() override;
 };
 
-class OnKey : public SGE::Logic
+class OnKey: public SGE::Logic
 {
 	SGE::Key key;
 	SGE::Scene* scene = nullptr;
@@ -132,11 +133,11 @@ struct Aimcast: b2RayCastCallback
 	float32 ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float32 fraction) override;
 };
 
-class AimPointer : public SGE::Logic
+class AimPointer: public SGE::Logic
 {
 protected:
 	b2World* world;
-	SGE::Object* aimer;
+	SGE::Reactive* aimer;
 	Pointer* pointer;
 	SGE::MouseObject* mouse;
 	SGE::Camera2d* cam;
@@ -155,7 +156,7 @@ namespace SGE
 	class Scene;
 }
 
-class WinCondition : public SGE::Logic
+class WinCondition: public SGE::Logic
 {
 protected:
 	volatile size_t& zombies;

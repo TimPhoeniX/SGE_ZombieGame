@@ -1,6 +1,6 @@
 ﻿#include "Objects.hpp"
 
-#include <Object/Shape/sge_shape_rectangle.hpp>
+#include <Object/Shape/sge_shape.hpp>
 
 glm::vec2 Player::getPositionGLM() const noexcept
 {
@@ -23,12 +23,10 @@ float Player::getYGLM() const noexcept
 	return this->body->GetPosition().y * 64.f;
 }
 Human::Human(const float x, const float y): Reactive(x, y, true, getCircle())
-{
-}
+{}
 
-Human::Human(const float x, const float y, const unsigned int max): Reactive(x, y, true, getCircle()), maxCount(max)
-{
-}
+Human::Human(const float x, const float y, const unsigned int max) : Reactive(x, y, true, getCircle()), maxCount(max)
+{}
 
 void Human::setMaxCount(const unsigned int max)
 {
@@ -37,7 +35,7 @@ void Human::setMaxCount(const unsigned int max)
 
 unsigned Human::getCounter()
 {
-	if (this->counter) return --this->counter;
+	if(this->counter) return --this->counter;
 	else return (this->counter = this->maxCount);
 }
 
@@ -63,7 +61,7 @@ void Human::setSpeed(float s)
 
 Human::BodyList& Human::getBodies()
 {
-	return this->bodies;	
+	return this->bodies;
 }
 
 void Human::Zombify()
@@ -102,7 +100,7 @@ float Human::getYGLM() const noexcept
 	return this->body->GetPosition().y * 64.f;
 }
 
-Pointer::Pointer() : Object(0.f,0.f,true,new SGE::Circle(6.f))
+Pointer::Pointer(): Object(0.f, 0.f, true, SGE::Shape::Circle(0.01f, true))
 {
 	this->drawable = true;
 	this->visible = true;
