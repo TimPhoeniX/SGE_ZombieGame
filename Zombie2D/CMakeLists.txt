@@ -1,10 +1,23 @@
 set(GAME_SOURCE_FILES main.cpp
 		GameCode/Actions.cpp
 		GameCode/Actions.hpp
+		GameCode/MovingObject.cpp
+		GameCode/MovingObject.hpp
+		GameCode/SteeringBehaviours.cpp
+		GameCode/SteeringBehaviours.hpp
+		GameCode/CellSpacePartition.hpp
+		GameCode/Path.hpp
+		GameCode/Image.hpp
+		GameCode/Wall.hpp
+		GameCode/PlayerMove.hpp
+		GameCode/PlayerMove.cpp
+		GameCode/World.hpp
+		GameCode/World.cpp
+		GameCode/Utilities.hpp
 		GameCode/Logics.cpp
 		GameCode/Logics.hpp
-		GameCode/Objects.cpp
-		GameCode/Objects.hpp
+		GameCode/SteeringBehavioursUpdate.cpp
+		GameCode/SteeringBehavioursUpdate.hpp
 		GameCode/ZombieScene.cpp
 		GameCode/ZombieScene.hpp
 		GameCode/IntroScene.cpp

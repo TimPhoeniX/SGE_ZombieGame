@@ -79,11 +79,11 @@ void Load::action_ends()
 }
 
 //TODO Make them normal virtual?
-void GOTO::action_begin() noexcept
+void GOTO::action_begin()
 {
 }
 
-void GOTO::action_ends() noexcept
+void GOTO::action_ends()
 {
 }
 
@@ -95,10 +95,10 @@ void LogicSwitch::action_begin()
 {
 }
 
-void MouseClickedAction::action_begin() noexcept
+void MouseClickedAction::action_begin()
 {
 }
 
-void MouseClickedAction::action_ends() noexcept
+void MouseClickedAction::action_ends()
 {
 }

@@ -12,24 +12,18 @@ class GOTO: public SGE::Action
 
 public:
 	GOTO(SGE::Object* object);
-
-	virtual void action_begin() noexcept override;
-
-	virtual void action_main() noexcept override;
-
-	virtual void action_ends() noexcept override;
+	void action_begin() override;
+	void action_ends() override;
+	void action_main() noexcept override;
 };
 
 class PortalAction: public SGE::Action
 {
 public:
 	PortalAction();
-
-	virtual void action_begin() override;
-
-	virtual void action_main() override;
-
-	virtual void action_ends() override;
+	void action_begin() override;
+	void action_main() override;
+	void action_ends() override;
 };
 
 class LogicSwitch: public SGE::Action
@@ -38,12 +32,9 @@ class LogicSwitch: public SGE::Action
 
 public:
 	LogicSwitch(SGE::Logic* id);
-
-	void action_begin() override;
-
 	void action_main() override;
-
 	void action_ends() override;
+	void action_begin() override;
 };
 
 class MouseClickedAction: public SGE::Action
@@ -53,12 +44,9 @@ class MouseClickedAction: public SGE::Action
 
 public:
 	MouseClickedAction(SGE::MouseObject* mouseObject, SGE::Object* player);
-
-	virtual void action_begin() noexcept override;
-
-	virtual void action_ends() noexcept override;
-
-	virtual void action_main() noexcept override;
+	void action_main() noexcept override;
+	void action_begin() override;
+	void action_ends() override;
 };
 
 class Load: public SGE::Action

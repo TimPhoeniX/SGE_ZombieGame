@@ -3,7 +3,7 @@
 #include <Object/Shape/sge_shape.hpp>
 #include <Game/sge_game.hpp>
 #include <Game/Director/sge_director.hpp>
-#include "Objects.hpp"
+#include "Image.hpp"
 #include "Logics.hpp"
 #include "Actions.hpp"
 

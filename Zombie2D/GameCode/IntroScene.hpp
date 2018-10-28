@@ -1,7 +1,6 @@
 ﻿#ifndef INTRO_SCENE
 #define INTRO_SCENE
 
-#include <string>
 #include <Scene/sge_scene.hpp>
 
 class IntroScene: public SGE::Scene
