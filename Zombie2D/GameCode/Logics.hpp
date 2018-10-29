@@ -1,21 +1,42 @@
 ﻿#ifndef ZOMBIEGAME_LOGICS
 #define ZOMBIEGAME_LOGICS
 
-#include <vector>
-
 #include <Logic/sge_logic.hpp>
-#include <Box2D/Dynamics/b2WorldCallbacks.h>
 #include <IO/Key/sge_key.hpp>
 #include <Object/Camera2d/sge_camera2d.hpp>
 #include <IO/Mouse/sge_mouse.hpp>
+#include <vector>
 
-#include "MovingObject.hpp"
-#include "World.hpp"
+namespace SGE
+{
+	class WorldElement;
+}
+class MovingObject;
+class Player;
+class World;
 
 namespace SGE
 {
 	class Scene;
 }
+
+class MoveAwayFromObstacle: public SGE::Logic
+{
+protected:
+	World* world;
+	MovingObject* player;
+	std::vector<SGE::WorldElement>* obstacles;
+	std::vector<MovingObject*> movers;
+public:
+
+	MoveAwayFromObstacle(World* const world, MovingObject* player, std::vector<SGE::WorldElement>* const worldElements)
+		: Logic(SGE::LogicPriority::Highest), world(world), player(player), obstacles(worldElements)
+	{
+		movers.reserve(10);
+	}
+
+	void performLogic() override;
+};
 
 class SnapCamera: public SGE::Logic
 {
@@ -78,8 +99,9 @@ protected:
 	volatile size_t& zombies;
 	volatile size_t& killedZombies;
 	SGE::Scene* endGame = nullptr;
+	Player* player;
 public:
-	WinCondition(size_t& zombies, size_t& killedZombies, SGE::Scene* endGame);
+	WinCondition(size_t& zombies, size_t& killedZombies, SGE::Scene* endGame, Player* player);
 	virtual void performLogic() override;
 };
 #endif

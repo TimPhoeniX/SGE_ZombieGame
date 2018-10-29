@@ -2,6 +2,7 @@
 #include "Utils/Timing/sge_fps_limiter.hpp"
 #include "Box2D/Common/b2Math.h"
 #include "MovingObject.hpp"
+#include "World.hpp"
 
 SteeringBehavioursUpdate::SteeringBehavioursUpdate(std::vector<MovingObject>* objects): Logic(SGE::LogicPriority::Highest), objects(objects)
 {}
@@ -24,6 +25,6 @@ void SteeringBehavioursUpdate::performLogic()
 			o.setHeading(velocity);
 			o.setSide(velocity.Skew());
 		}
-		//Update
+		o.getWorld()->UpdateMover(&o, oldPos);
 	}
 }

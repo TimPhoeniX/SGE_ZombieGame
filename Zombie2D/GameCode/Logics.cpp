@@ -11,7 +11,69 @@
 #include <Game/Director/sge_director.hpp>
 
 #include "ZombieScene.hpp"
-#include "SteeringBehaviours.hpp"
+
+void MoveAwayFromObstacle::performLogic()
+{
+	for(SGE::WorldElement& w: *this->obstacles)
+	{
+		SGE::Shape obShape = *w.getShape();
+		switch(obShape.getType())
+		{
+		case SGE::ShapeType::Circle:
+		{
+			this->movers.clear();
+			this->world->getNeighbours(this->movers, w.getPosition(), obShape.getRadius() + 1.f);		
+			if(this->movers.empty()) continue;
+			for(MovingObject* mo : this->movers)
+			{
+				SGE::Shape moShape = *mo->getShape();
+				b2Vec2 toMover = mo->getPosition() - w.getPosition();
+				float dist = toMover.Length();
+				float radius = moShape.getRadius() + obShape.getRadius();
+				if(dist < radius)
+				{
+					toMover *= (radius - dist) / dist;
+					mo->setPosition(mo->getPosition() + toMover);
+				}
+			}
+			break;
+		}
+		case SGE::ShapeType::Rectangle:
+		{
+			break;
+		}
+		case SGE::ShapeType::None: break;
+		default: ;
+		}
+	}
+	auto ob = this->world->getObstacles(this->player, 4.f*this->player->getShape()->getRadius());
+	for(SGE::Object* o : ob)
+	{
+		SGE::Shape obShape = *o->getShape();
+		switch(obShape.getType())
+		{
+		case SGE::ShapeType::Circle:
+		{
+			SGE::Shape moShape = *this->player->getShape();
+			b2Vec2 toMover = this->player->getPosition() - o->getPosition();
+			float dist = toMover.Length();
+			float radius = moShape.getRadius() + obShape.getRadius();
+			if(dist < radius)
+			{
+				toMover *= (radius - dist) / dist;
+				this->player->setPosition(this->player->getPosition() + toMover);
+			}
+			break;
+		}
+		case SGE::ShapeType::Rectangle:
+		{
+			break;
+		}
+		case SGE::ShapeType::None: break;
+		default:;
+		}
+	}
+}
 
 SnapCamera::SnapCamera(const float speed, const SGE::Key up, const SGE::Key down, const SGE::Key left, const SGE::Key right, const SGE::Key snapKey, SGE::Object* snapTo, SGE::Camera2d* cam): Logic(SGE::LogicPriority::Highest), speed(speed), up(up), down(down), left(left), right(right), snapKey(snapKey), snapTo(snapTo), cam(cam)
 {}
@@ -88,13 +150,13 @@ void Aim::performLogic()
 	aim(pos, target);
 }
 
-WinCondition::WinCondition(size_t& zombies, size_t& killedZombies, SGE::Scene* endGame)
-	: Logic(SGE::LogicPriority::Low), zombies(zombies), killedZombies(killedZombies), endGame(endGame)
+WinCondition::WinCondition(size_t& zombies, size_t& killedZombies, SGE::Scene* endGame, Player* player)
+	: Logic(SGE::LogicPriority::Low), zombies(zombies), killedZombies(killedZombies), endGame(endGame), player(player)
 {}
 
 void WinCondition::performLogic()
 {
-	if(zombies == killedZombies)
+	if(zombies == killedZombies || this->player->getHP() == 0);
 	{
 		this->sendAction(new Load(endGame));
 	}

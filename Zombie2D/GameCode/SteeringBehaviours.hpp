@@ -19,6 +19,7 @@ protected:
 	std::array<b2Vec2, 3> feelers = {b2Vec2_zero, b2Vec2_zero, b2Vec2_zero};
 	MovingObject* owner = nullptr;
 	const MovingObject* player = nullptr;
+	std::vector<MovingObject*> neighbours;
 	b2Vec2 wTarget = b2Vec2_zero;
 	Path path;
 	float wRadius = 2.f;
@@ -27,6 +28,7 @@ protected:
 	float boxLength = 8.f;
 	float32 WSDsq = 0.001f;
 	void CreateFeelers();
+	static b2Vec2 GetHidingSpot(const b2Vec2& obPos, float obRadius, b2Vec2 targetPos);
 
 public:
 	SteeringBehaviours(MovingObject* owner);
@@ -41,17 +43,21 @@ public:
 	b2Vec2 ObstacleAvoidance();
 	b2Vec2 WallAvoidance();
 	b2Vec2 Interpose(const MovingObject*const aA, const MovingObject*const aB) const;
-	b2Vec2 GetHidingSpot(const b2Vec2& obPos, float obRadius, b2Vec2 targetPos) const;
 	b2Vec2 Hide(const MovingObject*const target) const;
 	b2Vec2 FollowPath();
 	b2Vec2 OffsetPursuit(const MovingObject*const leader, b2Vec2 offset) const;
-	b2Vec2 Separation(const std::vector<MovingObject*> neighbours) const;
-	b2Vec2 Alignment(const std::vector<MovingObject*> neighbours) const;
-	b2Vec2 Cohesion(const std::vector<MovingObject*> neighbours) const;
+	b2Vec2 Separation(const std::vector<MovingObject*>& neighbours) const;
+	b2Vec2 Alignment(const std::vector<MovingObject*>& neighbours) const;
+	b2Vec2 Cohesion(const std::vector<MovingObject*>& neighbours) const;
 
 	void setPlayer(const MovingObject*const player)
 	{
 		this->player = player;
+	}
+
+	std::vector<MovingObject*>& getNeighbours()
+	{
+		return this->neighbours;
 	}
 };
 

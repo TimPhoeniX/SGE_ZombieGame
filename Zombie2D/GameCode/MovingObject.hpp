@@ -1,7 +1,8 @@
 #pragma once
 #include <Object/sge_object.hpp>
 #include "SteeringBehaviours.hpp"
-#include "World.hpp"
+
+class World;
 
 class MovingObject: public SGE::Object
 {
@@ -11,8 +12,8 @@ protected:
 	b2Vec2 side = b2Vec2_zero;
 	float mass = 1.f;
 	float massInv = 1.f;
-	float maxSpeed = 3.f;
-	float maxForce = 10.f;
+	float maxSpeed = 4.f;
+	float maxForce = 16.f;
 	float maxTurnRate = 90.f;
 	World* world = nullptr;
 	SteeringBehaviours* steering = new SteeringBehaviours(this);
@@ -99,7 +100,7 @@ public:
 		this->maxTurnRate = maxTurnRate;
 	}
 
-	void* getWorld() const
+	World* getWorld() const
 	{
 		return world;
 	}
@@ -122,3 +123,18 @@ public:
 	}
 };
 
+class Player: public MovingObject
+{
+protected: 
+	float hp = 100.f;
+public:
+	using MovingObject::MovingObject;
+	float getHP() const
+	{
+		return this->hp;
+	}
+	void Damage(float damage)
+	{
+		this->hp -= damage;
+	}
+};

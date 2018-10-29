@@ -4,10 +4,13 @@
 #include <functional>
 #include <vector>
 #include "Utilities.hpp"
+#include "World.hpp"
 #include "Wall.hpp"
 
 SteeringBehaviours::SteeringBehaviours(MovingObject* owner): owner(owner)
-{}
+{
+	this->neighbours.reserve(10u);
+}
 
 
 SteeringBehaviours::~SteeringBehaviours()
@@ -16,10 +19,28 @@ SteeringBehaviours::~SteeringBehaviours()
 b2Vec2 SteeringBehaviours::CalculateForce()
 {
 	b2Vec2 sForce = b2Vec2_zero;
-	sForce += this->Wander();
-	if(b2Distance(this->owner->getPosition(),this->player->getPosition()) < 10.f)
-		sForce += 2*this->Evade(this->player);
-	return sForce;
+	sForce += 3 * this->WallAvoidance();
+	sForce += 3 * this->ObstacleAvoidance();
+
+	this->neighbours.clear();
+	this->owner->getWorld()->getNeighbours(this->neighbours, this->owner, 4.f);
+	auto grouped = this->neighbours.size() >= 5u;
+
+	sForce += this->Cohesion(neighbours);
+	sForce += 2 * this->Alignment(neighbours);
+	sForce += 2 * this->Separation(neighbours);
+
+	if(grouped)
+	{
+		sForce += 2 * this->Pursuit(this->player);
+	}
+	else
+	{
+		if(b2DistanceSquared(this->owner->getPosition(), this->player->getPosition()) < 900.f)
+			sForce += 2 * this->Hide(this->player);
+		sForce += this->Wander();
+	}
+	return 2 * sForce;
 }
 
 b2Vec2 SteeringBehaviours::Seek(b2Vec2 target) const
@@ -61,8 +82,7 @@ b2Vec2 SteeringBehaviours::Pursuit(const MovingObject* const evader) const
 {
 	b2Vec2 toEvader = evader->getPosition() - owner->getPosition();
 	float relHead = b2Dot(owner->getHeading(), evader->getHeading());
-	if(b2Dot(toEvader, owner->getHeading()) > 0.f
-	   && relHead < -0.95f)
+	if(b2Dot(toEvader, owner->getHeading()) > 0.f && relHead < -0.95f)
 	{
 		return this->Seek(evader->getPosition());
 	}
@@ -95,8 +115,8 @@ b2Vec2 SteeringBehaviours::Wander()
 
 b2Vec2 SteeringBehaviours::ObstacleAvoidance()
 {
-	this->boxLength = 2.f*(1.f + owner->getSpeed() / owner->getMaxSpeed());
-	std::vector<SGE::Object*> obstacles;// = owner->getWorld()->getObstacles(owner, this->boxLength);
+	this->boxLength = 4.f*(1.f + owner->getSpeed() / owner->getMaxSpeed());
+	std::vector<SGE::Object*> obstacles = owner->getWorld()->getObstacles(owner, this->boxLength);
 	SGE::Object* closestObject = nullptr;
 	float closestDist = std::numeric_limits<float>::max();
 	b2Vec2 closestLocalPos = b2Vec2_zero;
@@ -134,11 +154,11 @@ b2Vec2 SteeringBehaviours::ObstacleAvoidance()
 
 void SteeringBehaviours::CreateFeelers()
 {
-	this->feelers[0] = owner->getPosition() + 4.f * owner->getHeading();
+	this->feelers[0] = owner->getPosition() + 6.f * owner->getHeading();
 	auto temp = b2Mul(b2Rot(b2_pi*0.25), owner->getHeading());
-	this->feelers[1] = owner->getPosition() + 2.f * temp;
+	this->feelers[1] = owner->getPosition() + 3.f * temp;
 	temp = b2Mul(b2Rot(b2_pi*-0.25), owner->getHeading());
-	this->feelers[2] = owner->getPosition() + 2.f * temp;
+	this->feelers[2] = owner->getPosition() + 3.f * temp;
 }
 
 b2Vec2 SteeringBehaviours::WallAvoidance()
@@ -150,7 +170,7 @@ b2Vec2 SteeringBehaviours::WallAvoidance()
 	b2Vec2 sForce = b2Vec2_zero;
 	b2Vec2 point = b2Vec2_zero;
 	b2Vec2 closestPoint = b2Vec2_zero;
-	std::vector<std::pair<SGE::Object*, Wall>> walls;//owner->getWorld()->getWalls();
+	std::vector<std::pair<SGE::Object*, Wall>>& walls = owner->getWorld()->getWalls();
 	for(b2Vec2 feeler : this->feelers)
 	{
 		for(auto& wall : walls)
@@ -186,7 +206,7 @@ b2Vec2 SteeringBehaviours::Interpose(const MovingObject* const aA, const MovingO
 	return this->Arrive(midPoint, Deceleration::fast);
 }
 
-b2Vec2 SteeringBehaviours::GetHidingSpot(const b2Vec2& obPos, float obRadius, b2Vec2 targetPos) const
+b2Vec2 SteeringBehaviours::GetHidingSpot(const b2Vec2& obPos, float obRadius, b2Vec2 targetPos)
 {
 	constexpr float boundaryDist = 2.f;
 	float distAway = obRadius + boundaryDist;
@@ -199,7 +219,7 @@ b2Vec2 SteeringBehaviours::Hide(const MovingObject* const target) const
 {
 	float closestDist = std::numeric_limits<float>::max();
 	b2Vec2 bestSpot = b2Vec2_zero;
-	std::vector<SGE::Object*> obstacles;// = owner->getWorld()->getObstacles(owner);
+	std::vector<SGE::Object*> obstacles = owner->getWorld()->getObstacles(owner, 15.f);
 	for(SGE::Object* ob : obstacles)
 	{
 		b2Vec2 spot = this->GetHidingSpot(ob->getPosition(), ob->getShape()->getRadius(), target->getPosition());
@@ -212,7 +232,7 @@ b2Vec2 SteeringBehaviours::Hide(const MovingObject* const target) const
 	}
 	if(closestDist == std::numeric_limits<float>::max())
 	{
-		this->Evade(target);
+		return this->Evade(target);
 	}
 	return Arrive(bestSpot, Deceleration::fast);
 }
@@ -241,7 +261,7 @@ b2Vec2 SteeringBehaviours::OffsetPursuit(const MovingObject* const leader, b2Vec
 	return Arrive(worldOffset + lookAhead * leader->getVelocity(), Deceleration::fast);
 }
 
-b2Vec2 SteeringBehaviours::Separation(const std::vector<MovingObject*> neighbours) const
+b2Vec2 SteeringBehaviours::Separation(const std::vector<MovingObject*>& neighbours) const
 {
 	b2Vec2 sForce = b2Vec2_zero;
 	for(MovingObject* neighbour : neighbours)
@@ -253,22 +273,22 @@ b2Vec2 SteeringBehaviours::Separation(const std::vector<MovingObject*> neighbour
 	return sForce;
 }
 
-b2Vec2 SteeringBehaviours::Alignment(const std::vector<MovingObject*> neighbours) const
+b2Vec2 SteeringBehaviours::Alignment(const std::vector<MovingObject*>& neighbours) const
 {
 	b2Vec2 avgHeading = b2Vec2_zero;
-	for(MovingObject* neighbour: neighbours)
+	for(MovingObject* neighbour : neighbours)
 	{
 		avgHeading += neighbour->getHeading();
 	}
 	if(!neighbours.empty())
 	{
-		avgHeading *= 1.f/neighbours.size();
+		avgHeading *= 1.f / neighbours.size();
 		avgHeading -= owner->getHeading();
 	}
 	return avgHeading;
 }
 
-b2Vec2 SteeringBehaviours::Cohesion(const std::vector<MovingObject*> neighbours) const
+b2Vec2 SteeringBehaviours::Cohesion(const std::vector<MovingObject*>& neighbours) const
 {
 	b2Vec2 massCenter = b2Vec2_zero, sForce = b2Vec2_zero;
 	for(MovingObject* neighbour : neighbours)

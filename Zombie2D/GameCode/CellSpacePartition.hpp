@@ -5,8 +5,8 @@
 
 struct AABB
 {
-	b2Vec2 low;
-	b2Vec2 high;
+	b2Vec2 low = b2Vec2_zero;
+	b2Vec2 high = b2Vec2_zero;
 	inline bool isOverlapping(const AABB& other) const
 	{
 		return !((other.high.y < this->low.y)
@@ -14,6 +14,8 @@ struct AABB
 				 || (other.low.x > this->high.x)
 				 || (other.high.x < this->low.x));
 	}
+	AABB() = default;
+	AABB(b2Vec2 low, b2Vec2 high): low(low), high(high){}
 };
 
 template<typename T>
@@ -21,8 +23,10 @@ struct Cell
 {
 	std::vector<T*> Entities;
 	AABB aabb;
-	Cell():Entities(10u)
-	{}
+	Cell()
+	{
+		this->Entities.reserve(10u);
+	}
 	Cell(const Cell&) = default;
 	Cell(Cell&&) = default;
 	Cell(b2Vec2 low, b2Vec2 high): aabb{low, high}
@@ -37,12 +41,17 @@ class CellSpacePartition
 	class AABBQuery
 	{
 		size_t beginX, beginY, endX, endY;
-		explicit AABBQuery(const CellSpacePartition*const partition, const AABB& query)
+	public:
+		explicit AABBQuery(const CellSpacePartition*const space, const AABB& query)
 		{
-			beginX = size_t(X * query.low.x / partition->width);
-			beginY = size_t(Y * query.low.y / partition->height);
-			endX = size_t(X * query.high.x / partition->width);
-			endY = size_t(Y * query.high.y / partition->height);
+			b2Vec2 low = b2Clamp(query.low, b2Vec2_zero, {space->width,space->height});
+			b2Vec2 high = b2Clamp(query.high, b2Vec2_zero, {space->width,space->height});
+			beginX = size_t(X * low.x / space->width);
+			beginY = size_t(Y * low.y / space->height);
+			endX = size_t(X * high.x / space->width);
+			endX = endX < X ? endX : X - 1;
+			endY = size_t(Y * high.y / space->height);
+			endY = endY < Y ? endY : Y - 1;
 		}
 		class iterator: std::iterator<std::input_iterator_tag, size_t>
 		{
@@ -74,9 +83,17 @@ class CellSpacePartition
 			}
 			size_t operator*() const
 			{
-				return x*y;
+				return size_t(x + X*y);
 			}
 		};
+		iterator begin()
+		{
+			return iterator(beginX, beginY, this);
+		}
+		iterator end()
+		{
+			return iterator(beginX, endY+1u, this);
+		}
 	};
 	std::array<Cell<T>, X*Y> cells;
 	const float width;
@@ -92,8 +109,8 @@ public:
 			{
 				b2Vec2 low{x * this->cellWidth, y * this->cellHeight};
 				b2Vec2 high{low.x + this->cellWidth, low.y + this->cellHeight};
-				this->cells[x*y].aabb = AABB{low,high};
-
+				AABB aabb = AABB(low, high);
+				this->cells[x + X*y].aabb = aabb;
 			}
 		}
 	}
@@ -108,9 +125,8 @@ public:
 
 	void CalculateNeighbours(std::vector<T*>& res, b2Vec2 pos, const float radius)
 	{
-		res.clear();
 		AABB query{pos - b2Vec2{radius,radius}, pos + b2Vec2{radius, radius}};
-		for(Cell<T>& cell : this->cells)
+		/*for(Cell<T>& cell : this->cells)
 		{
 			if(!cell.Entities.empty() && cell.aabb.isOverlapping(query))
 			{
@@ -122,8 +138,8 @@ public:
 					}
 				}
 			}
-		}
-		/*AABBQuery list(this, query);
+		}*/
+		AABBQuery list(this, query);
 		for(size_t it: list)
 		{
 			auto& cell = this->cells[it];
@@ -137,13 +153,13 @@ public:
 					}
 				}
 			}
-		}*/
+		}
 	}
 
 	size_t PosToIndex(b2Vec2 pos) const
 	{
 		size_t id = size_t(X * pos.x / this->width) + (size_t(Y*pos.y / this->height) * X);
-		return id > X*Y ? X*Y - 1u : id;
+		return id >= X*Y ? X*Y - 1u : id;
 	}
 
 	void AddEntity(T* e)
@@ -157,7 +173,7 @@ public:
 		size_t oldI = this->PosToIndex(oldPos);
 		size_t newI = this->PosToIndex(e->getPosition());
 		if(oldI == newI) return;
-		this->cells[oldI].Entities.erase(std::find(this->cells[oldI].Entities.begin(), this->cells[oldI].Entities.end(),e));
+		this->cells[oldI].Entities.erase(std::remove(this->cells[oldI].Entities.begin(), this->cells[oldI].Entities.end(), e), this->cells[oldI].Entities.end());
 		this->cells[newI].Entities.push_back(e);
 	}
 };

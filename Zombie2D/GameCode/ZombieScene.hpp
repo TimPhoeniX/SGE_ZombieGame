@@ -3,10 +3,8 @@
 
 #include <Game/sge_game.hpp>
 #include <Scene/sge_scene.hpp>
-
-#include "Image.hpp"
-#include "World.hpp"
 #include "MovingObject.hpp"
+#include "World.hpp"
 
 class ZombieScene: public SGE::Scene
 {
@@ -17,10 +15,10 @@ protected:
 	std::vector<MovingObject> movers;
 	std::size_t zombieCount = 0;
 	std::size_t killCount = 0;
-	MovingObject* player;
+	Player* player = nullptr;
 	static bool init();
 public:
-	SGE::Scene* endScene;
+	SGE::Scene* endScene = nullptr;
 	static const b2Vec2 trianglePoints[3];
 	static SGE::GLTexture zombieTexture;
 	static SGE::GLTexture deadZombieTexture;
