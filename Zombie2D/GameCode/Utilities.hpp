@@ -6,6 +6,14 @@ inline SGE::Shape* getCircle()
 	return circle;
 }
 
+inline float PointToLineDistance(b2Vec2 point, b2Vec2 from , b2Vec2 to)
+{
+	b2Vec2 dir = to - from;
+	dir.Normalize();
+	b2Vec2 AP = point - from;
+	return b2Abs(b2Cross(AP, dir));
+}
+
 inline bool LineIntersection(b2Vec2 a, b2Vec2 b,
 					  b2Vec2 c, b2Vec2 d,
 					  float& distToIp, b2Vec2& point)

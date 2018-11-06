@@ -22,9 +22,9 @@ protected:
 	std::vector<MovingObject*> neighbours;
 	b2Vec2 wTarget = b2Vec2_zero;
 	Path path;
-	float wRadius = 2.f;
-	float wDistance = 2.f;
-	float wJitter = 10.f;
+	float wRadius = 2.5f;
+	float wDistance = 4.f;
+	float wJitter = 15.f;
 	float boxLength = 8.f;
 	float32 WSDsq = 0.001f;
 	void CreateFeelers();

@@ -21,7 +21,9 @@ public:
 
 	MovingObject(const b2Vec2& position, SGE::Shape* shape, World* world, const b2Vec2& heading = b2Vec2{1.f,0.f})
 		: Object(position, true, shape), heading(heading), side(heading.Skew()), world(world)
-	{}
+	{
+		this->orientation = heading.Orientation();
+	}
 
 	b2Vec2 getVelocity() const
 	{

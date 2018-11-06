@@ -19,28 +19,28 @@ SteeringBehaviours::~SteeringBehaviours()
 b2Vec2 SteeringBehaviours::CalculateForce()
 {
 	b2Vec2 sForce = b2Vec2_zero;
-	sForce += 3 * this->WallAvoidance();
-	sForce += 3 * this->ObstacleAvoidance();
+	sForce += 2.5f * this->WallAvoidance();
+	sForce += 2.5f * this->ObstacleAvoidance();
 
 	this->neighbours.clear();
-	this->owner->getWorld()->getNeighbours(this->neighbours, this->owner, 4.f);
+	this->owner->getWorld()->getNeighbours(this->neighbours, this->owner, 3.5f);
 	auto grouped = this->neighbours.size() >= 5u;
-
-	sForce += this->Cohesion(neighbours);
-	sForce += 2 * this->Alignment(neighbours);
-	sForce += 2 * this->Separation(neighbours);
 
 	if(grouped)
 	{
-		sForce += 2 * this->Pursuit(this->player);
+		sForce += this->Cohesion(neighbours);
+		sForce += 2.f * this->Alignment(neighbours);
+		sForce += 1.5f * this->Separation(neighbours);
+		sForce += 2.f * this->Pursuit(this->player);
 	}
 	else
 	{
-		if(b2DistanceSquared(this->owner->getPosition(), this->player->getPosition()) < 900.f)
-			sForce += 2 * this->Hide(this->player);
+		if(b2DistanceSquared(this->owner->getPosition(), this->player->getPosition()) < 625.f)
+			sForce += 2.f * this->Hide(this->player);
 		sForce += this->Wander();
+		sForce += this->Separation(neighbours);
 	}
-	return 2 * sForce;
+	return 2.f * sForce;
 }
 
 b2Vec2 SteeringBehaviours::Seek(b2Vec2 target) const

@@ -11,6 +11,23 @@
 #include <Game/Director/sge_director.hpp>
 
 #include "ZombieScene.hpp"
+#include "Utilities.hpp"
+
+void DamagePlayer::performLogic()
+{
+	this->movers.clear();
+	this->world->getNeighbours(this->movers, this->player->getPosition(), 2.f * this->player->getShape()->getRadius());
+	for (MovingObject* mover : this->movers)
+	{
+		float dist = b2DistanceSquared(this->player->getPosition(), mover->getPosition());
+		float radii = this->player->getShape()->getRadius() + mover->getShape()->getRadius();
+		radii *= radii;
+		if(dist < radii)
+		{
+			this->player->Damage(SGE::delta_time * this->dps);
+		}
+	}
+}
 
 void MoveAwayFromObstacle::performLogic()
 {
@@ -71,6 +88,25 @@ void MoveAwayFromObstacle::performLogic()
 		}
 		case SGE::ShapeType::None: break;
 		default:;
+		}
+	}
+}
+
+void MoveAwayFromWall::performLogic()
+{
+	for(MovingObject& mo: this->movers)
+	{
+		for (std::pair<SGE::Object*, Wall>& wall: this->world->getWalls())
+		{
+			if(PointToLineDistance(mo.getPosition(), wall.second.From(), wall.second.To()) < mo.getShape()->getRadius())
+			{
+				float dist;
+				b2Vec2 intersect;
+				switch (wall.second.Type())
+				{
+					
+				}
+			}
 		}
 	}
 }
@@ -156,7 +192,7 @@ WinCondition::WinCondition(size_t& zombies, size_t& killedZombies, SGE::Scene* e
 
 void WinCondition::performLogic()
 {
-	if(zombies == killedZombies || this->player->getHP() == 0);
+	if(zombies == killedZombies || this->player->getHP() < 0)
 	{
 		this->sendAction(new Load(endGame));
 	}

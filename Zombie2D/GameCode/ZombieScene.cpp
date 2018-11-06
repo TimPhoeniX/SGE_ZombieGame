@@ -25,8 +25,8 @@ bool ZombieScene::init()
 	return true;
 }
 
-constexpr float Width = 120;
-constexpr float Height = 80;
+constexpr float Width = 120.f;
+constexpr float Height = 80.f;
 
 ZombieScene::ZombieScene(SGE::Game* game, const char* path): Scene(), world(Width, Height), game(game),
 path([game](const char* path)
@@ -51,21 +51,21 @@ void ZombieScene::loadScene()
 
 	world.emplace_back(-0.5f, Height * 0.5f, game->getGamePath() + "Resources/Textures/light_bricks.png");
 	world.back().setShape(vertical);
-	this->world.AddWall(&world.back(), World::Right);
+	this->world.AddWall(&world.back(), Wall::Right);
 	world.emplace_back(Width + .5f, Height * 0.5f, game->getGamePath() + "Resources/Textures/light_bricks.png");
 	world.back().setShape(vertical);
-	this->world.AddWall(&world.back(), World::Left);
-	world.emplace_back(Width * 0.5, Height + .5f, game->getGamePath() + "Resources/Textures/light_bricks.png");
+	this->world.AddWall(&world.back(), Wall::Left);
+	world.emplace_back(Width * 0.5f, Height + .5f, game->getGamePath() + "Resources/Textures/light_bricks.png");
 	world.back().setShape(horizontal);
-	this->world.AddWall(&world.back(), World::Bottom);
-	world.emplace_back(Width * 0.5, -0.5f, game->getGamePath() + "Resources/Textures/light_bricks.png");
+	this->world.AddWall(&world.back(), Wall::Bottom);
+	world.emplace_back(Width * 0.5f, -0.5f, game->getGamePath() + "Resources/Textures/light_bricks.png");
 	world.back().setShape(horizontal);
-	this->world.AddWall(&world.back(), World::Top);
+	this->world.AddWall(&world.back(), Wall::Top);
 
-	SGE::Object* Dummy1 = new Image(-1000, -1000);
+	/*SGE::Object* Dummy1 = new Image(-1000, -1000);
 	game->textureObject(Dummy1, "Resources/Textures/deadzombie.png");
 	deadZombieTexture = Dummy1->getTexture();
-	this->addObject(Dummy1);
+	this->addObject(Dummy1);*/
 
 	SGE::Camera2d* camera = game->getCamera();
 	camera->setScale(0.5f);
@@ -85,10 +85,10 @@ void ZombieScene::loadScene()
 
 	std::set<std::pair<size_t, size_t>> free;
 
-	const int humans = 80;
+	constexpr size_t humans = 80;
 	srand(time(NULL));
 
-	for(int i = 0; i < humans; i++)
+	while(free.size() < humans)
 	{
 		free.emplace(6u + 6u * (rand() % size_t((Width - 12u) / 6u)), 6u + 6u * (rand() % size_t((Height - 12u) / 6u)));
 	}
@@ -97,8 +97,8 @@ void ZombieScene::loadScene()
 
 	std::random_shuffle(freeList.begin(), freeList.end());
 
-	int pillars = 30;
-	auto randf = std::bind(std::uniform_real_distribution<float>(-1.f, 1.f), std::default_random_engine());
+	int pillars = 40;
+	auto randf = std::bind(std::uniform_real_distribution<float>(-b2_pi, b2_pi), std::default_random_engine());
 
 	for(auto pos : freeList)
 	{
@@ -113,8 +113,8 @@ void ZombieScene::loadScene()
 			--pillars;
 			continue;
 		}
-		b2Vec2 heading{randf(),randf()};
-		heading.Normalize();
+		b2Vec2 heading{0.f,1.f};
+		heading = b2Mul(b2Rot(randf()), heading);
 		this->movers.emplace_back(b2Vec2{float(pos.first),float(pos.second)}, getCircle(), &this->world, heading);
 		auto mover = &this->movers.back();
 		game->textureObject(mover, "Resources/Textures/zombie.png");
@@ -132,6 +132,7 @@ void ZombieScene::loadScene()
 	//AddMovement here
 	this->addLogic(new SteeringBehavioursUpdate(&this->movers));
 	this->addLogic(new MoveAwayFromObstacle(&this->world, player, &world));
+	this->addLogic(new DamagePlayer(&this->world, this->player, 5));
 
 	this->addLogic(new Aim(&this->world, player, mouse, camera, this->killCount, 8.f));
 	this->addLogic(new WinCondition(this->zombieCount, this->killCount, endScene, player));
@@ -171,9 +172,11 @@ void ZombieScene::finalize()
 {
 	this->level.clear();
 	this->movers.clear();
+	this->world.clear();
 	delete this->player;
 	vec_clear(this->getLogics());
 	vec_clear(this->getActions());
+	this->getObjects().clear();
 }
 
 void ZombieScene::onDraw()

@@ -3,12 +3,19 @@
 
 class Wall
 {
+public:
+	enum WallEdge
+	{
+		Left, Right, Top, Bottom
+	};
+private:
 	b2Vec2 from;
 	b2Vec2 to;
+	WallEdge type;
 public:
 	Wall() = default;
 	constexpr Wall(const Wall&) = default;
-	constexpr Wall(b2Vec2 from, b2Vec2 to): from(from), to(to)
+	constexpr Wall(b2Vec2 from, b2Vec2 to, WallEdge type): from(from), to(to), type(type)
 	{}
 	constexpr b2Vec2 From() const
 	{
@@ -23,5 +30,10 @@ public:
 		auto norm = (to - from).Skew();
 		norm.Normalize();
 		return norm;
+	}
+
+	constexpr WallEdge Type() const
+	{
+		return this->type;
 	}
 };

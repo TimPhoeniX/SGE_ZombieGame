@@ -47,7 +47,9 @@ class CellSpacePartition
 			b2Vec2 low = b2Clamp(query.low, b2Vec2_zero, {space->width,space->height});
 			b2Vec2 high = b2Clamp(query.high, b2Vec2_zero, {space->width,space->height});
 			beginX = size_t(X * low.x / space->width);
+			beginX = beginX < X ? beginX : X - 1;
 			beginY = size_t(Y * low.y / space->height);
+			beginY = beginY < Y ? beginY : Y - 1;
 			endX = size_t(X * high.x / space->width);
 			endX = endX < X ? endX : X - 1;
 			endY = size_t(Y * high.y / space->height);

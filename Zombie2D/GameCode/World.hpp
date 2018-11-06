@@ -16,11 +16,6 @@ class World
 	CellSpacePartition<SGE::Object, partitionX, partitionY> obstacles;
 	std::vector<std::pair<SGE::Object*, Wall>> walls;
 public:
-	enum WallEdge
-	{
-		Left, Right, Top, Bottom
-	};
-
 	World(float width, float height);
 
 	std::vector<SGE::Object*> getObstacles(MovingObject* const mover, float radius);
@@ -50,7 +45,7 @@ public:
 		this->movers.UpdateEntity(mo, oldPos);
 	}
 
-	void AddWall(SGE::Object* wall, WallEdge edge)
+	void AddWall(SGE::Object* wall, Wall::WallEdge edge)
 	{
 		const b2Vec2 pos = wall->getPosition();
 		const float w = wall->getShape()->getWidth();
@@ -58,24 +53,31 @@ public:
 		b2Vec2 from, to;
 		switch(edge)
 		{
-		case Left:
+		case Wall::Left:
 			from = b2Vec2{pos.x - 0.5f * w, pos.y - 0.5f * h};
 			to = b2Vec2{pos.x - 0.5f * w, pos.y + 0.5f * h};
 			break;
-		case Right:
+		case Wall::Right:
 			from = b2Vec2{pos.x + 0.5f * w, pos.y + 0.5f * h};
 			to = b2Vec2{pos.x + 0.5f * w, pos.y - 0.5f * h};
 			break;
-		case Top:
+		case Wall::Top:
 			from = b2Vec2{pos.x - 0.5f * w, pos.y + 0.5f * h};
 			to = b2Vec2{pos.x + 0.5f * w, pos.y + 0.5f * h};
 			break;
-		case Bottom:
+		case Wall::Bottom:
 			from = b2Vec2{pos.x + 0.5f * w, pos.y - 0.5f * h};
 			to = b2Vec2{pos.x - 0.5f * w, pos.y - 0.5f * h};
 			break;
 		default:;
 		}
-		this->walls.emplace_back(wall, Wall(from, to));
+		this->walls.emplace_back(wall, Wall(from, to, edge));
+	}
+
+	void clear()
+	{
+		this->movers.ClearCells();
+		this->obstacles.ClearCells();
+		this->walls.clear();
 	}
 };

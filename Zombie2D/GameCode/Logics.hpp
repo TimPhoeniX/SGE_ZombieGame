@@ -20,7 +20,23 @@ namespace SGE
 	class Scene;
 }
 
-class MoveAwayFromObstacle: public SGE::Logic
+class DamagePlayer : public SGE::Logic
+{
+protected:
+	World* world;
+	Player* player;
+	float dps;
+	std::vector<MovingObject*> movers;
+public:
+	explicit DamagePlayer(World* world, Player* player, float dps) : Logic(SGE::LogicPriority::High), world(world), player(player), dps(dps)
+	{
+		this->movers.reserve(15u);
+	}
+
+	void performLogic() override;
+};
+
+class MoveAwayFromObstacle : public SGE::Logic
 {
 protected:
 	World* world;
@@ -38,7 +54,22 @@ public:
 	void performLogic() override;
 };
 
-class SnapCamera: public SGE::Logic
+class MoveAwayFromWall : public SGE::Logic
+{
+protected:
+	World* world;
+	MovingObject* player;
+	std::vector<MovingObject>& movers;
+public:
+
+	MoveAwayFromWall(World* const world, MovingObject* player, std::vector<MovingObject>& movers)
+		: Logic(SGE::LogicPriority::Highest), world(world), player(player), movers(movers)
+	{}
+
+	void performLogic() override;
+};
+
+class SnapCamera : public SGE::Logic
 {
 	const float speed = 0;
 	const SGE::Key up, down, left, right, snapKey;
@@ -54,7 +85,7 @@ public:
 	void performLogic() override;
 };
 
-class Timer: public SGE::Logic
+class Timer : public SGE::Logic
 {
 	float time = .0f;
 	SGE::Action* action = nullptr;
@@ -63,7 +94,7 @@ public:
 	void performLogic() override;
 };
 
-class OnKey: public SGE::Logic
+class OnKey : public SGE::Logic
 {
 	SGE::Key key;
 	SGE::Scene* scene = nullptr;
@@ -72,7 +103,7 @@ public:
 	void performLogic() override;
 };
 
-class Aim: public SGE::Logic
+class Aim : public SGE::Logic
 {
 protected:
 	World* world;
@@ -93,7 +124,7 @@ namespace SGE
 	class Scene;
 }
 
-class WinCondition: public SGE::Logic
+class WinCondition : public SGE::Logic
 {
 protected:
 	volatile size_t& zombies;
