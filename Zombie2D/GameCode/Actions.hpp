@@ -2,11 +2,31 @@
 #define ZOMBIEGAME_ACTIONS
 
 #include <Action/sge_action.hpp>
-#include <Logic/sge_logic.hpp>
-#include <IO/Mouse/sge_mouse.hpp>
-#include <Game/sge_game.hpp>
+#include "Logics.hpp"
 
-class GOTO: public SGE::Action
+namespace SGE
+{
+	class Scene;
+	class Object;
+	class MouseObject;
+	class Logic;
+}
+
+class Shoot : public SGE::Action
+{
+protected:
+	Aim* shootLogic = nullptr;
+public:
+	explicit Shoot(Aim* shootLogic);
+
+	void action_begin() override;
+
+	void action_main() override;
+
+	void action_ends() override;
+};
+
+class GOTO : public SGE::Action
 {
 	SGE::Object* object = nullptr;
 
@@ -17,7 +37,7 @@ public:
 	void action_main() noexcept override;
 };
 
-class PortalAction: public SGE::Action
+class PortalAction : public SGE::Action
 {
 public:
 	PortalAction();
@@ -26,7 +46,7 @@ public:
 	void action_ends() override;
 };
 
-class LogicSwitch: public SGE::Action
+class LogicSwitch : public SGE::Action
 {
 	SGE::Logic* logic = nullptr;
 
@@ -37,7 +57,7 @@ public:
 	void action_begin() override;
 };
 
-class MouseClickedAction: public SGE::Action
+class MouseClickedAction : public SGE::Action
 {
 	SGE::MouseObject* mouseObject = nullptr;
 	SGE::Object* player = nullptr;
@@ -49,7 +69,7 @@ public:
 	void action_ends() override;
 };
 
-class Load: public SGE::Action
+class Load : public SGE::Action
 {
 	SGE::Scene* nextScene = nullptr;
 public:

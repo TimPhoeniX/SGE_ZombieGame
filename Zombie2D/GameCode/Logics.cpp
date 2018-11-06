@@ -160,14 +160,14 @@ void OnKey::performLogic()
 	}
 }
 
-Aim::Aim(World* world, SGE::Object* aimer, SGE::MouseObject* mouse, SGE::Camera2d* cam, std::size_t& counter, float range)
-	: Logic(SGE::LogicPriority::High), world(world), aimer(aimer), mouse(mouse), cam(cam), range(range), counter(counter)
+Aim::Aim(World* world, SGE::Object* aimer, SGE::MouseObject* mouse, SGE::Camera2d* cam, std::size_t& counter)
+	: Logic(SGE::LogicPriority::High), world(world), aimer(aimer), mouse(mouse), cam(cam), counter(counter)
 {
 }
 
-void Aim::aim(b2Vec2 pos, b2Vec2 target)
+bool Aim::aim(b2Vec2 pos, b2Vec2 direction)
 {
-	//Raycast
+	return false;
 }
 
 void Aim::performLogic()
@@ -181,9 +181,17 @@ void Aim::performLogic()
 	direction.Normalize();
 	this->aimer->setOrientation(direction.Orientation());
 	//std::cout << direction.x << ", " << direction.y << std::endl;
-	b2Vec2 pos{this->aimer->getXGLM() / 64.f, this->aimer->getYGLM() / 64.f};
-	b2Vec2 target = pos + this->range* 1000.f * direction;
-	aim(pos, target);
+	b2Vec2 pos = this->aimer->getPosition();
+	aim(pos, direction);
+}
+
+void Aim::Shoot()
+{
+	if (!this->fired && this->reload < 0)
+	{
+		this->fired = true;
+		this->reload = 3.f;
+	}
 }
 
 WinCondition::WinCondition(size_t& zombies, size_t& killedZombies, SGE::Scene* endGame, Player* player)

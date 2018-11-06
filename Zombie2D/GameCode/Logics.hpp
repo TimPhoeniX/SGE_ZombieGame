@@ -110,13 +110,14 @@ protected:
 	SGE::Object* aimer;
 	SGE::MouseObject* mouse;
 	SGE::Camera2d* cam;
-	float range;
 	float reload = -1.f;
 	std::size_t& counter;
-	void aim(b2Vec2 pos, b2Vec2 target);
+	bool fired;
+	bool aim(b2Vec2 pos, b2Vec2 target);
 public:
-	Aim(World* world, SGE::Object* aimer, SGE::MouseObject* mouse, SGE::Camera2d* cam, std::size_t& counter, float range);
+	Aim(World* world, SGE::Object* aimer, SGE::MouseObject* mouse, SGE::Camera2d* cam, std::size_t& counter);
 	void performLogic() override;
+	void Shoot();
 };
 
 namespace SGE

@@ -134,7 +134,7 @@ void ZombieScene::loadScene()
 	this->addLogic(new MoveAwayFromObstacle(&this->world, player, &world));
 	this->addLogic(new DamagePlayer(&this->world, this->player, 5));
 
-	this->addLogic(new Aim(&this->world, player, mouse, camera, this->killCount, 8.f));
+	this->addLogic(new Aim(&this->world, player, mouse, camera, this->killCount));
 	this->addLogic(new WinCondition(this->zombieCount, this->killCount, endScene, player));
 
 	//Puts player on top
