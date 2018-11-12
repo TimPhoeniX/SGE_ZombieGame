@@ -123,6 +123,13 @@ public:
 	{
 		return this->velocity.Length();
 	}
+
+	bool killed = false;
+
+	bool IsDead()
+	{
+		return this->killed;
+	}
 };
 
 class Player: public MovingObject

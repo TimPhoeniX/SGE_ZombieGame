@@ -11,32 +11,37 @@ namespace
 
 class World
 {
+protected:
 	CellSpacePartition<MovingObject, partitionX, partitionY> movers;
 	CellSpacePartition<SGE::Object, partitionX, partitionY> obstacles;
 	std::vector<std::pair<SGE::Object*, Wall>> walls;
-	float width;
-	float height;
+	const float width, height, cellWidth, cellHeight;
 public:
 	class Ray
 	{
+	protected:
+		b2Vec2 from, direction;
+		float width, height, cellWidth, cellHeight;
+	public:
+		Ray(b2Vec2 from, b2Vec2 direction, float width, float height, float cellWidth, float cellHeight);
 		class RayIterator
 		{
 			const float tDeltaX = 0.f , tDeltaY = 0.f;
-			const size_t deltaX = 0u, deltaY = 0u;
+			const int deltaX = 0u, deltaY = 0u;
 			float tMaxX = 0.f, tMaxY = 0.f;
-			size_t X = 0u, Y = 0u;
+			int X = 0u, Y = 0u;
 		public:
 			constexpr RayIterator() = default;
-			constexpr RayIterator(float max_x, float max_y, float delta_x, float delta_y, size_t delta_x1, size_t delta_y1, size_t x, size_t y);
+			constexpr RayIterator(float max_x, float max_y, float delta_x, float delta_y,
+								  size_t delta_x1, size_t delta_y1, size_t x, size_t y);
 
 			RayIterator& operator++();
 			size_t operator*() const;
 			bool operator==(const RayIterator& other) const;
 			bool operator!=(const RayIterator& other) const;
-
-			RayIterator begin();
-			RayIterator end();
 		};
+		RayIterator begin() const;
+		RayIterator end() const;
 	};
 	World(float width, float height);
 
@@ -62,16 +67,35 @@ public:
 
 	void clear();
 
-	void Raycast(b2Vec2 from, b2Vec2 direction, b2Vec2& hit);
-};
+	template<typename T>
+	T* getHit(b2Vec2 from, b2Vec2 direction, b2Vec2& hit, const std::vector<T*>& entities) const
+	{
+		T* closestObject = nullptr;
+		float closestDist = std::numeric_limits<float>::max();
+		for(T* ob : entities)
+		{
+			b2Vec2 localPos = PointToLocalSpace(ob->getPosition(), direction, from);
+			float obRadius = ob->getShape()->getRadius();
+			if(localPos.x >= 0.f)
+			{
+				if(b2Abs(localPos.y) < obRadius)
+				{
+					float cX = localPos.x, cY = localPos.y;
+					float sqrtPart = sqrt(obRadius*obRadius - cY*cY);
+					float ip = cX - sqrtPart;
+					if(ip <= 0.f) ip = cX + sqrtPart;
+					if(ip < closestDist)
+					{
+						closestDist = ip;
+						closestObject = ob;
+						hit = PointToWorldSpace(b2Vec2{ip,0.f}, direction, from);
+					}
+				}
+			}
+		}
+		return closestObject;
+	}
 
-constexpr World::Ray::RayIterator::RayIterator(float max_x, float max_y, float delta_x, float delta_y, size_t delta_x1, size_t delta_y1, size_t x, size_t y): tDeltaX(delta_x),
-                                                                                                                                                              tDeltaY(delta_y),
-                                                                                                                                                              deltaX(delta_x1),
-                                                                                                                                                              deltaY(delta_y1),
-                                                                                                                                                              tMaxX(max_x),
-                                                                                                                                                              tMaxY(max_y),
-                                                                                                                                                              X(x),
-                                                                                                                                                              Y(y)
-{
-}
+	MovingObject* Raycast(b2Vec2 from, b2Vec2 direction, b2Vec2& hit) const;
+	void RemoveMover(MovingObject* hitObject);
+};

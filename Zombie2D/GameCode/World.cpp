@@ -1,36 +1,11 @@
 #include "World.hpp"
+#include <iostream>
+#include <regex>
+#include "Utilities.hpp"
 
-World::Ray::RayIterator& World::Ray::RayIterator::operator++()
-{
-	if (tMaxX < tMaxY)
-	{
-		tMaxX += tDeltaX;
-		X += deltaX;
-	}
-	else
-	{
-		tMaxY += tDeltaY;
-		Y += tDeltaX;
-	}
-	return *this;
-}
-
-size_t World::Ray::RayIterator::operator*() const
-{
-	return this->X + partitionX * Y;
-}
-
-bool World::Ray::RayIterator::operator==(const RayIterator& other) const
-{
-	return this->X < partitionX && this->Y < partitionY;
-}
-
-bool World::Ray::RayIterator::operator!=(const RayIterator& other) const
-{
-	return !this->operator==(other);
-}
-
-World::World(float width, float height): width(width), height(height), movers(width, height), obstacles(width, height), walls(4u)
+World::World(float width, float height)
+	: movers(width, height), obstacles(width, height), walls(4u),
+	width(width), height(height), cellWidth(width / partitionX), cellHeight(height / partitionY)
 {}
 
 std::vector<SGE::Object*> World::getObstacles(MovingObject* const mover, float radius)
@@ -54,7 +29,7 @@ void World::getNeighbours(std::vector<MovingObject*>& res, MovingObject* const m
 void World::getNeighbours(std::vector<MovingObject*>& res, MovingObject* const mover, float radius)
 {
 	this->getNeighbours(res, mover->getPosition(), radius);
-	res.erase(std::remove(res.begin(), res.end(), mover),res.end());
+	res.erase(std::remove(res.begin(), res.end(), mover), res.end());
 }
 
 void World::getNeighbours(std::vector<MovingObject*>& res, b2Vec2 position, float radius)
@@ -77,6 +52,11 @@ void World::AddMover(MovingObject* mo)
 	this->movers.AddEntity(mo);
 }
 
+void World::RemoveMover(MovingObject* mo)
+{
+	this->movers.RemoveEntity(mo);
+}
+
 void World::UpdateMover(MovingObject* mo, b2Vec2 oldPos)
 {
 	this->movers.UpdateEntity(mo, oldPos);
@@ -88,7 +68,7 @@ void World::AddWall(SGE::Object* wall, Wall::WallEdge edge)
 	const float w = wall->getShape()->getWidth();
 	const float h = wall->getShape()->getHeight();
 	b2Vec2 from, to;
-	switch (edge)
+	switch(edge)
 	{
 	case Wall::Left:
 		from = b2Vec2{pos.x - 0.5f * w, pos.y - 0.5f * h};
@@ -106,7 +86,7 @@ void World::AddWall(SGE::Object* wall, Wall::WallEdge edge)
 		from = b2Vec2{pos.x + 0.5f * w, pos.y - 0.5f * h};
 		to = b2Vec2{pos.x - 0.5f * w, pos.y - 0.5f * h};
 		break;
-	default: ;
+	default:;
 	}
 	this->walls.emplace_back(wall, Wall(from, to, edge));
 }
@@ -118,13 +98,93 @@ void World::clear()
 	this->walls.clear();
 }
 
-bool World::Raycast(b2Vec2 from, b2Vec2 direction, b2Vec2& hit)
+MovingObject* World::Raycast(b2Vec2 from, b2Vec2 direction, b2Vec2& hit) const
 {
-	float tMaxX = 0.f, tMaxY = 0.f, tDeltaX = 0.f, tDeltaY = 0.f;
-	const size_t deltaX = size_t(std::copysign(1.f, direction.x));
-	const size_t deltaY = size_t(std::copysign(1.f, direction.y));
-	size_t X = size_t(std::floor(from.x / this->width));
-	size_t Y = size_t(std::floor(from.y / this->height));
-	size_t CellIdx = X + partitionX * Y;
+	for(size_t index : Ray(from, direction, this->width, this->height, this->cellWidth, this->cellHeight))
+	{
+		b2Vec2 moverHit, obstacleHit;
+		MovingObject* hitMover = this->getHit(from, direction, moverHit, this->movers.getEntities(index));
+		SGE::Object* hitObstacle = this->getHit(from, direction, obstacleHit, this->obstacles.getEntities(index));
+		if( hitMover && hitObstacle )
+		{
+			if(b2DistanceSquared(from, moverHit) < b2DistanceSquared(from, obstacleHit))
+			{
+				hit = moverHit;
+				return hitMover;
+			}
+			else
+			{
+				hit = obstacleHit;
+			}
+		}
+		else if(hitMover)
+		{
+			hit = moverHit;
+			return hitMover;
+		}
+		else if(hitObstacle)
+		{
+			hit = obstacleHit;
+		}
+		else
+		{
+			hit = b2Clamp(from + 1000.f * direction, b2Vec2_zero, b2Vec2{this->width,this->height});
+		}
+	}
+	return nullptr;
 }
 
+World::Ray::RayIterator World::Ray::begin() const
+{
+	float tMaxX = 0.f, tMaxY = 0.f, tDeltaX = 0.f, tDeltaY = 0.f;
+	const int deltaX = int(std::copysign(1.f, this->direction.x));
+	const int deltaY = int(std::copysign(1.f, this->direction.y));
+	int X = int(std::floor(this->from.x / this->cellWidth));
+	int Y = int(std::floor(this->from.y / this->cellHeight));
+	tMaxX = ((X + std::max(0, deltaX)) * this->cellWidth - this->from.x) / this->direction.x;
+	tMaxY = ((Y + std::max(0, deltaY)) * this->cellHeight - this->from.y) / this->direction.y;
+	tDeltaX = std::abs(this->cellWidth / this->direction.x);
+	tDeltaY = std::abs(this->cellHeight / this->direction.y);
+	return RayIterator(tMaxX, tMaxY, tDeltaX, tDeltaY, deltaX, deltaY, X, Y);
+}
+
+World::Ray::RayIterator World::Ray::end() const
+{
+	return RayIterator();
+}
+
+constexpr World::Ray::RayIterator::RayIterator(float max_x, float max_y, float delta_x, float delta_y,
+											   size_t delta_x1, size_t delta_y1, size_t x, size_t y)
+	:tDeltaX(delta_x), tDeltaY(delta_y), deltaX(delta_x1), deltaY(delta_y1),
+	tMaxX(max_x), tMaxY(max_y), X(x), Y(y)
+{}
+
+World::Ray::Ray(b2Vec2 from, b2Vec2 direction, float width, float height, float cellWidth, float cellHeight)
+	: from(from), direction(direction), width(width), height(height), cellWidth(cellWidth), cellHeight(cellHeight)
+{}
+
+World::Ray::RayIterator& World::Ray::RayIterator::operator++()
+{
+	if(tMaxX < tMaxY)
+	{
+		tMaxX += tDeltaX;
+		X += deltaX;
+	}
+	else
+	{
+		tMaxY += tDeltaY;
+		Y += deltaX;
+	}
+	std::cout << "X: " << X << " Y: " << Y << std::endl;
+	return *this;
+}
+
+size_t World::Ray::RayIterator::operator*() const
+{
+	return size_t(this->X + partitionX * Y);
+}
+
+bool World::Ray::RayIterator::operator!=(const RayIterator& other) const
+{
+	return (X >= 0 && X < partitionX) && (Y >= 0 && Y < partitionY);
+}

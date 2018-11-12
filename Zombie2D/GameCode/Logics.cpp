@@ -104,7 +104,11 @@ void MoveAwayFromWall::performLogic()
 				b2Vec2 intersect;
 				switch (wall.second.Type())
 				{
-					
+				case Wall::Left: break;
+				case Wall::Right: break;
+				case Wall::Top: break;
+				case Wall::Bottom: break;
+				default:break;
 				}
 			}
 		}
@@ -167,7 +171,16 @@ Aim::Aim(World* world, SGE::Object* aimer, SGE::MouseObject* mouse, SGE::Camera2
 
 bool Aim::aim(b2Vec2 pos, b2Vec2 direction)
 {
-	return false;
+	b2Vec2 hitPos = b2Vec2_zero;
+	MovingObject* hitObject = this->world->Raycast(pos, direction, hitPos);
+	//Draw railbeam
+	if(hitObject)
+	{
+		hitObject->setTexture(ZombieScene::deadZombieTexture);
+		hitObject->killed = true;
+		this->world->RemoveMover(hitObject);
+	}
+	return bool(hitObject);
 }
 
 void Aim::performLogic()
@@ -176,13 +189,16 @@ void Aim::performLogic()
 	{
 		reload -= SGE::delta_time;
 	}
-	auto dir = this->cam->screenToWorld(this->mouse->getMouseCoords()) - this->aimer->getPositionGLM();
-	b2Vec2 direction{dir.x, dir.y};
-	direction.Normalize();
-	this->aimer->setOrientation(direction.Orientation());
-	//std::cout << direction.x << ", " << direction.y << std::endl;
-	b2Vec2 pos = this->aimer->getPosition();
-	aim(pos, direction);
+	if(this->fired)
+	{
+		this->fired = false;
+		auto dir = this->cam->screenToWorld(this->mouse->getMouseCoords()) - this->aimer->getPositionGLM();
+		b2Vec2 direction{dir.x, dir.y};
+		direction.Normalize();
+		this->aimer->setOrientation(direction.Orientation());
+		b2Vec2 pos = this->aimer->getPosition();
+		aim(pos, direction);
+	}
 }
 
 void Aim::Shoot()

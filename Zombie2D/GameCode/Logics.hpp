@@ -112,7 +112,7 @@ protected:
 	SGE::Camera2d* cam;
 	float reload = -1.f;
 	std::size_t& counter;
-	bool fired;
+	bool fired = false;
 	bool aim(b2Vec2 pos, b2Vec2 target);
 public:
 	Aim(World* world, SGE::Object* aimer, SGE::MouseObject* mouse, SGE::Camera2d* cam, std::size_t& counter);

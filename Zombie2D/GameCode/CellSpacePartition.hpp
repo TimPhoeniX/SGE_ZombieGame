@@ -175,8 +175,21 @@ public:
 		size_t oldI = this->PosToIndex(oldPos);
 		size_t newI = this->PosToIndex(e->getPosition());
 		if(oldI == newI) return;
-		this->cells[oldI].Entities.erase(std::remove(this->cells[oldI].Entities.begin(), this->cells[oldI].Entities.end(), e), this->cells[oldI].Entities.end());
+		auto& ent = this->cells[oldI].Entities;
+		ent.erase(std::remove(ent.begin(), ent.end(), e), ent.end());
 		this->cells[newI].Entities.push_back(e);
+	}
+
+	const std::vector<T*>& getEntities(size_t index) const
+	{
+		return this->cells[index].Entities;
+	}
+
+	void RemoveEntity(T* e)
+	{
+		size_t idx = this->PosToIndex(e->getPosition());
+		auto& ent = this->cells[idx].Entities;
+		ent.erase(std::remove(ent.begin(), ent.end(), e), ent.end());
 	}
 };
 

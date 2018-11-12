@@ -15,10 +15,11 @@
 #include "Utilities.hpp"
 #include "PlayerMove.hpp"
 #include "SteeringBehavioursUpdate.hpp"
+#include "Game/InputHandler/sge_input_binder.hpp"
 
 SGE::GLTexture ZombieScene::zombieTexture;
 SGE::GLTexture ZombieScene::deadZombieTexture;
-const b2Vec2 ZombieScene::trianglePoints[3] = {b2Vec2(-0.5f,-0.5f), b2Vec2(-0.5f,0.5f), b2Vec2(0.5f,0.f)};
+const b2Vec2 ZombieScene::trianglePoints[3] = {b2Vec2(0.5f,0.f), b2Vec2(-0.5f,-0.5f), b2Vec2(-0.5f,0.5f)};
 
 bool ZombieScene::init()
 {
@@ -62,10 +63,10 @@ void ZombieScene::loadScene()
 	world.back().setShape(horizontal);
 	this->world.AddWall(&world.back(), Wall::Top);
 
-	/*SGE::Object* Dummy1 = new Image(-1000, -1000);
+	SGE::Object* Dummy1 = new Image(-1000, -1000);
 	game->textureObject(Dummy1, "Resources/Textures/deadzombie.png");
 	deadZombieTexture = Dummy1->getTexture();
-	this->addObject(Dummy1);*/
+	this->addObject(Dummy1);
 
 	SGE::Camera2d* camera = game->getCamera();
 	camera->setScale(0.5f);
@@ -133,10 +134,11 @@ void ZombieScene::loadScene()
 	this->addLogic(new SteeringBehavioursUpdate(&this->movers));
 	this->addLogic(new MoveAwayFromObstacle(&this->world, player, &world));
 	this->addLogic(new DamagePlayer(&this->world, this->player, 5));
-
-	this->addLogic(new Aim(&this->world, player, mouse, camera, this->killCount));
+	auto aim = new Aim(&this->world, player, mouse, camera, this->killCount);
+	this->addLogic(aim);
 	this->addLogic(new WinCondition(this->zombieCount, this->killCount, endScene, player));
 
+	game->mapAction(SGE::InputBinder(new Shoot(aim), SGE::Key::MB_Left));
 	//Puts player on top
 	game->textureObject(player, "Resources/Textures/player.png");
 	player->setVisible(true);
@@ -177,6 +179,7 @@ void ZombieScene::finalize()
 	vec_clear(this->getLogics());
 	vec_clear(this->getActions());
 	this->getObjects().clear();
+	game->unmapAll();
 }
 
 void ZombieScene::onDraw()
