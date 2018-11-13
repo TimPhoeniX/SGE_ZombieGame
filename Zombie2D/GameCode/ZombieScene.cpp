@@ -26,8 +26,8 @@ bool ZombieScene::init()
 	return true;
 }
 
-constexpr float Width = 120.f;
-constexpr float Height = 80.f;
+constexpr float Width = 160.f;
+constexpr float Height = 120.f;
 
 ZombieScene::ZombieScene(SGE::Game* game, const char* path): Scene(), world(Width, Height), game(game),
 path([game](const char* path)
@@ -72,7 +72,7 @@ void ZombieScene::loadScene()
 	camera->setScale(0.5f);
 	SGE::MouseObject* mouse = game->getMouse();
 
-	this->player = new Player({1.f,1.f}, getCircle(), &this->world);
+	this->player = new Player({50.f, 50.f}, getCircle(), &this->world);
 	this->addObject(this->player);
 
 	auto PlayerMoveLogic = new PlayerMove(player, 3, SGE::Key::W, SGE::Key::S, SGE::Key::A, SGE::Key::D);
@@ -80,25 +80,29 @@ void ZombieScene::loadScene()
 	auto camLogic = new SnapCamera(8, SGE::Key::Up, SGE::Key::Down, SGE::Key::Left, SGE::Key::Right, SGE::Key::O, player, camera);
 	auto camZoom = new SGE::Logics::CameraZoom(camera, 0.1f, 0.5f, 0.15f, SGE::Key::Q, SGE::Key::E);
 
+	camera->setScale(0.05f);
+
 	this->addLogic(PlayerMoveLogic);
 	this->addLogic(camLogic);
 	this->addLogic(camZoom);
 
 	std::set<std::pair<size_t, size_t>> free;
 
-	constexpr size_t humans = 80;
 	srand(time(NULL));
 
+	constexpr size_t humans = 70;
+	int pillars = 25;
+	constexpr size_t border = 6u;
+	constexpr size_t spread = 10u;
 	while(free.size() < humans)
 	{
-		free.emplace(6u + 6u * (rand() % size_t((Width - 12u) / 6u)), 6u + 6u * (rand() % size_t((Height - 12u) / 6u)));
+		free.emplace(border + spread * (rand() % size_t((Width - 2u * border) / spread)), border + spread * (rand() % size_t((Height - 2u * border) / spread)));
 	}
 
 	std::vector<std::pair <size_t, size_t>> freeList(free.begin(), free.end());
 
 	std::random_shuffle(freeList.begin(), freeList.end());
 
-	int pillars = 40;
 	auto randf = std::bind(std::uniform_real_distribution<float>(-b2_pi, b2_pi), std::default_random_engine());
 
 	for(auto pos : freeList)
@@ -106,7 +110,7 @@ void ZombieScene::loadScene()
 		if(pillars > 0)
 		{
 			world.emplace_back(float(pos.first), float(pos.second), game->getGamePath() + "Resources/Textures/pillar.png");
-			float radius = (rand() % 5 / 10.f) + 1.f;
+			float radius = (rand() % 10 / 10.f) + 2.f;
 			world.back().setVisible(true);
 			world.back().setDrawable(true);
 			world.back().setShape(SGE::Shape::Circle(radius, false));

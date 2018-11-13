@@ -177,7 +177,7 @@ bool Aim::aim(b2Vec2 pos, b2Vec2 direction)
 	if(hitObject)
 	{
 		hitObject->setTexture(ZombieScene::deadZombieTexture);
-		hitObject->killed = true;
+		hitObject->setState(MoverState::Dead);
 		this->world->RemoveMover(hitObject);
 	}
 	return bool(hitObject);
@@ -206,7 +206,7 @@ void Aim::Shoot()
 	if (!this->fired && this->reload < 0)
 	{
 		this->fired = true;
-		this->reload = 3.f;
+		this->reload = 1.f;
 	}
 }
 

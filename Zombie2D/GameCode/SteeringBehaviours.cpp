@@ -19,26 +19,29 @@ SteeringBehaviours::~SteeringBehaviours()
 b2Vec2 SteeringBehaviours::CalculateForce()
 {
 	b2Vec2 sForce = b2Vec2_zero;
-	sForce += 2.5f * this->WallAvoidance();
-	sForce += 2.5f * this->ObstacleAvoidance();
+	sForce += 1.5f * this->WallAvoidance();
+	sForce += 2.0f * this->ObstacleAvoidance();
 
 	this->neighbours.clear();
-	this->owner->getWorld()->getNeighbours(this->neighbours, this->owner, 3.5f);
-	auto grouped = this->neighbours.size() >= 5u;
-
-	if(grouped)
+	this->owner->getWorld()->getNeighbours(this->neighbours, this->owner, 3.f);
+	if(this->neighbours.size() >= 4u)
 	{
-		sForce += this->Cohesion(neighbours);
-		sForce += 2.f * this->Alignment(neighbours);
-		sForce += 1.5f * this->Separation(neighbours);
-		sForce += 2.f * this->Pursuit(this->player);
+		this->owner->setState(MoverState::Attacking);
+	}
+
+	if(this->owner->IsAttacking())
+	{
+		sForce += 1.f * this->Cohesion(neighbours);
+		sForce += 1.5f * this->Alignment(neighbours);
+		sForce += 2.f * this->Separation(neighbours);
+		sForce += 3.f * this->Pursuit(this->player);
 	}
 	else
 	{
-		if(b2DistanceSquared(this->owner->getPosition(), this->player->getPosition()) < 625.f)
-			sForce += 2.f * this->Hide(this->player);
-		sForce += this->Wander();
-		sForce += this->Separation(neighbours);
+		sForce += 1.5 * this->Evade(this->player);
+		sForce += 1.5f * this->Hide(this->player);
+		sForce += 1.5f * this->Wander();
+		sForce += 1.f * this->Separation(neighbours);
 	}
 	return 2.f * sForce;
 }

@@ -4,6 +4,13 @@
 
 class World;
 
+enum class MoverState: char
+{
+	Moving,
+	Attacking,
+	Dead
+};
+
 class MovingObject: public SGE::Object
 {
 protected:
@@ -17,6 +24,7 @@ protected:
 	float maxTurnRate = 90.f;
 	World* world = nullptr;
 	SteeringBehaviours* steering = new SteeringBehaviours(this);
+	MoverState state = MoverState::Moving;
 public:
 
 	MovingObject(const b2Vec2& position, SGE::Shape* shape, World* world, const b2Vec2& heading = b2Vec2{1.f,0.f})
@@ -124,11 +132,19 @@ public:
 		return this->velocity.Length();
 	}
 
-	bool killed = false;
-
-	bool IsDead()
+	bool IsDead() const
 	{
-		return this->killed;
+		return this->state == MoverState::Dead;
+	}
+
+	bool IsAttacking() const
+	{
+		return this->state == MoverState::Attacking;
+	}
+
+	void setState(MoverState state)
+	{
+		this->state = state;
 	}
 };
 
