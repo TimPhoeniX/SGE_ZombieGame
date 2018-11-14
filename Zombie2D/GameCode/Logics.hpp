@@ -113,9 +113,10 @@ protected:
 	float reload = -1.f;
 	std::size_t& counter;
 	bool fired = false;
+	SGE::Object* pointer;
 	bool aim(b2Vec2 pos, b2Vec2 target);
 public:
-	Aim(World* world, SGE::Object* aimer, SGE::MouseObject* mouse, SGE::Camera2d* cam, std::size_t& counter);
+	Aim(World* world, SGE::Object* aimer, SGE::MouseObject* mouse, SGE::Camera2d* cam, std::size_t& counter, SGE::Object*);
 	void performLogic() override;
 	void Shoot();
 };

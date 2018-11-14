@@ -29,8 +29,8 @@ bool ZombieScene::init()
 	return true;
 }
 
-constexpr float Width = 80.f;
-constexpr float Height = 60.f;
+constexpr float Width = 160.f;
+constexpr float Height = 120.f;
 
 ZombieScene::ZombieScene(SGE::Game* game, const char* path): Scene(), world(Width, Height), game(game),
 path([game](const char* path)
@@ -120,10 +120,10 @@ void ZombieScene::loadScene()
 
 	srand(time(NULL));
 
-	constexpr size_t humans = 10;
-	int pillars = 5;
+	constexpr size_t humans = 65;
+	int pillars = 20;
 	constexpr size_t border = 6u;
-	constexpr size_t spread = 6u;
+	constexpr size_t spread = 12u;
 	while(free.size() < humans)
 	{
 		free.emplace(border + spread * (rand() % size_t((Width - 2u * border) / spread)), border + spread * (rand() % size_t((Height - 2u * border) / spread)));
@@ -166,11 +166,17 @@ void ZombieScene::loadScene()
 		zombieBatch->addObject(&mo);
 	}
 
+	auto pointer = new Image(0.f, 0.f);
+	pointer->setVisible(false);
+	pointer->setDrawable(true);
+	pointer->setShape(nullptr);
+	pointer->setLayer(-0.1f);
+	beamBatch->addObject(pointer);
 	//AddMovement here
 	this->addLogic(new SteeringBehavioursUpdate(&this->movers));
 	this->addLogic(new MoveAwayFromObstacle(&this->world, player, &world));
 	this->addLogic(new DamagePlayer(&this->world, this->player, 0));
-	auto aim = new Aim(&this->world, player, mouse, camera, this->killCount);
+	auto aim = new Aim(&this->world, player, mouse, camera, this->killCount, pointer);
 	this->addLogic(aim);
 	this->addLogic(new WinCondition(this->zombieCount, this->killCount, endScene, player));
 

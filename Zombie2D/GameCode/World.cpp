@@ -128,7 +128,18 @@ MovingObject* World::Raycast(b2Vec2 from, b2Vec2 direction, b2Vec2& hit) const
 		}
 		else
 		{
-			hit = b2Clamp(from + 1000.f * direction, b2Vec2_zero, b2Vec2{this->width,this->height});
+			float minDistance = std::numeric_limits<float>::max();
+			float distance = minDistance;
+			b2Vec2 tempHit;
+			for(auto wall : this->walls)
+			{
+				LineIntersection(from, from + 1000.f * direction, wall.second.From(), wall.second.To(), distance, tempHit);
+				if(distance < minDistance)
+				{
+					hit = tempHit;
+					minDistance = distance;
+				}
+			}
 		}
 	}
 	return nullptr;

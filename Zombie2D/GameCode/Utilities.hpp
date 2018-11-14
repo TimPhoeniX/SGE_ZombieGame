@@ -31,7 +31,7 @@ inline bool LineIntersection(b2Vec2 a, b2Vec2 b,
 	}
 	else
 	{
-		distToIp = 0;
+		distToIp = std::numeric_limits<float>::max();
 		return false;
 	}
 }

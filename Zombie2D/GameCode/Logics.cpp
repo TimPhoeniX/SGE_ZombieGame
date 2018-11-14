@@ -165,8 +165,8 @@ void OnKey::performLogic()
 	}
 }
 
-Aim::Aim(World* world, SGE::Object* aimer, SGE::MouseObject* mouse, SGE::Camera2d* cam, std::size_t& counter)
-	: Logic(SGE::LogicPriority::High), world(world), aimer(aimer), mouse(mouse), cam(cam), counter(counter)
+Aim::Aim(World* world, SGE::Object* aimer, SGE::MouseObject* mouse, SGE::Camera2d* cam, std::size_t& counter, SGE::Object* pointer)
+	: Logic(SGE::LogicPriority::High), world(world), aimer(aimer), mouse(mouse), cam(cam), counter(counter), pointer(pointer)
 {
 }
 
@@ -174,7 +174,12 @@ bool Aim::aim(b2Vec2 pos, b2Vec2 direction)
 {
 	b2Vec2 hitPos = b2Vec2_zero;
 	MovingObject* hitObject = this->world->Raycast(pos, direction, hitPos);
-	//Draw railbeam
+	this->pointer->setVisible(true);
+	b2Vec2 beam = hitPos - pos;
+	this->pointer->setPosition(pos + 0.5f * beam);
+	this->pointer->setOrientation(beam.Orientation());
+	this->pointer->setShape(SGE::Shape::Rectangle(beam.Length(), 0.1f, true));
+
 	if(hitObject)
 	{
 		ZombieScene::zombieBatch->removeObject(hitObject);
@@ -187,17 +192,19 @@ bool Aim::aim(b2Vec2 pos, b2Vec2 direction)
 
 void Aim::performLogic()
 {
+	auto dir = this->cam->screenToWorld(this->mouse->getMouseCoords()) - this->aimer->getPositionGLM();
+	b2Vec2 direction{dir.x, dir.y};
+	direction.Normalize();
+	this->aimer->setOrientation(direction.Orientation());
 	if(reload > 0.f)
 	{
 		reload -= SGE::delta_time;
+		if(reload < 0.f)
+			this->pointer->setVisible(false);
 	}
 	if(this->fired)
 	{
 		this->fired = false;
-		auto dir = this->cam->screenToWorld(this->mouse->getMouseCoords()) - this->aimer->getPositionGLM();
-		b2Vec2 direction{dir.x, dir.y};
-		direction.Normalize();
-		this->aimer->setOrientation(direction.Orientation());
 		b2Vec2 pos = this->aimer->getPosition();
 		aim(pos, direction);
 	}
