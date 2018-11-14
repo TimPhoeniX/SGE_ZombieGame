@@ -6,6 +6,11 @@
 #include "MovingObject.hpp"
 #include "World.hpp"
 
+namespace SGE
+{
+	class RealSpriteBatch;
+}
+
 class ZombieScene: public SGE::Scene
 {
 protected:
@@ -20,8 +25,8 @@ protected:
 public:
 	SGE::Scene* endScene = nullptr;
 	static const b2Vec2 trianglePoints[3];
-	static SGE::GLTexture zombieTexture;
-	static SGE::GLTexture deadZombieTexture;
+	static SGE::RealSpriteBatch* zombieBatch;
+	static SGE::RealSpriteBatch* deadZombieBatch;
 
 	ZombieScene(SGE::Game* game, const char* path);
 

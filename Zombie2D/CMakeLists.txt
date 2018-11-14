@@ -82,11 +82,11 @@ if (INCLUDE_ENGINE_PROJECT)
 	add_custom_command(TARGET ${PROJECT_NAME}
 			POST_BUILD
 			COMMAND ${CMAKE_COMMAND} -E
-			copy ${GLSL_DIR}/colorShader.frag ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/)
+			copy ${GLSL_DIR}/BatchShader.frag ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/)
 	add_custom_command(TARGET ${PROJECT_NAME}
 			POST_BUILD
 			COMMAND ${CMAKE_COMMAND} -E
-			copy ${GLSL_DIR}/colorShader.vert ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/)
+			copy ${GLSL_DIR}/BatchShader.vert ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/shaders/)
 
 elseif(COPY_SHADERS)
 

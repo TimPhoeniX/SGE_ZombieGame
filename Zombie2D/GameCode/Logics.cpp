@@ -12,6 +12,7 @@
 
 #include "ZombieScene.hpp"
 #include "Utilities.hpp"
+#include "Renderer/SpriteBatch/sge_sprite_batch.hpp"
 
 void DamagePlayer::performLogic()
 {
@@ -176,7 +177,8 @@ bool Aim::aim(b2Vec2 pos, b2Vec2 direction)
 	//Draw railbeam
 	if(hitObject)
 	{
-		hitObject->setTexture(ZombieScene::deadZombieTexture);
+		ZombieScene::zombieBatch->removeObject(hitObject);
+		ZombieScene::deadZombieBatch->addObject(hitObject);
 		hitObject->setState(MoverState::Dead);
 		this->world->RemoveMover(hitObject);
 	}

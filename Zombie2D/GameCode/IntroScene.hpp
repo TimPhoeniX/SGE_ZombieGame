@@ -26,6 +26,8 @@ class EndScene: public IntroScene
 public:
 	using IntroScene::IntroScene;
 	virtual void loadScene() override;
+	size_t winBatch = 0;
+	size_t loseBatch = 0;
 };
 
 #endif
