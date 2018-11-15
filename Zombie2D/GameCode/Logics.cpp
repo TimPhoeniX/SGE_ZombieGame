@@ -178,7 +178,7 @@ bool Aim::aim(b2Vec2 pos, b2Vec2 direction)
 	b2Vec2 beam = hitPos - pos;
 	this->pointer->setPosition(pos + 0.5f * beam);
 	this->pointer->setOrientation(beam.Orientation());
-	this->pointer->setShape(SGE::Shape::Rectangle(beam.Length(), 0.1f, true));
+	this->pointer->setShape(SGE::Shape::Rectangle(beam.Length(), 0.05f, true));
 
 	if(hitObject)
 	{

@@ -125,6 +125,7 @@ MovingObject* World::Raycast(b2Vec2 from, b2Vec2 direction, b2Vec2& hit) const
 		else if(hitObstacle)
 		{
 			hit = obstacleHit;
+			break;
 		}
 		else
 		{
@@ -186,7 +187,6 @@ World::Ray::RayIterator& World::Ray::RayIterator::operator++()
 		tMaxY += tDeltaY;
 		Y += deltaX;
 	}
-	std::cout << "X: " << X << " Y: " << Y << std::endl;
 	return *this;
 }
 

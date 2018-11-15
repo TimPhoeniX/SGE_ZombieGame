@@ -2,6 +2,7 @@
 #include "CellSpacePartition.hpp"
 #include "MovingObject.hpp"
 #include "Wall.hpp"
+#include "Utilities.hpp"
 
 namespace
 {

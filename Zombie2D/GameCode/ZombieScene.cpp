@@ -170,7 +170,7 @@ void ZombieScene::loadScene()
 	pointer->setVisible(false);
 	pointer->setDrawable(true);
 	pointer->setShape(nullptr);
-	pointer->setLayer(-0.1f);
+	pointer->setLayer(0.1f);
 	beamBatch->addObject(pointer);
 	//AddMovement here
 	this->addLogic(new SteeringBehavioursUpdate(&this->movers));
