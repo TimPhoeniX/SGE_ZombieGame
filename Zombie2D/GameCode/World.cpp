@@ -4,9 +4,11 @@
 #include "Utilities.hpp"
 
 World::World(float width, float height)
-	: movers(width, height), obstacles(width, height), walls(4u),
+	: movers(width, height), obstacles(width, height), walls(),
 	width(width), height(height), cellWidth(width / partitionX), cellHeight(height / partitionY)
-{}
+{
+	walls.reserve(4);
+}
 
 std::vector<SGE::Object*> World::getObstacles(MovingObject* const mover, float radius)
 {
@@ -105,7 +107,7 @@ MovingObject* World::Raycast(b2Vec2 from, b2Vec2 direction, b2Vec2& hit) const
 		b2Vec2 moverHit, obstacleHit;
 		MovingObject* hitMover = this->getHit(from, direction, moverHit, this->movers.getEntities(index));
 		SGE::Object* hitObstacle = this->getHit(from, direction, obstacleHit, this->obstacles.getEntities(index));
-		if( hitMover && hitObstacle )
+		if(hitMover && hitObstacle)
 		{
 			if(b2DistanceSquared(from, moverHit) < b2DistanceSquared(from, obstacleHit))
 			{
@@ -115,6 +117,7 @@ MovingObject* World::Raycast(b2Vec2 from, b2Vec2 direction, b2Vec2& hit) const
 			else
 			{
 				hit = obstacleHit;
+				return nullptr;
 			}
 		}
 		else if(hitMover)
@@ -125,22 +128,19 @@ MovingObject* World::Raycast(b2Vec2 from, b2Vec2 direction, b2Vec2& hit) const
 		else if(hitObstacle)
 		{
 			hit = obstacleHit;
-			break;
+			return nullptr;
 		}
-		else
+	}
+	float minDistance = std::numeric_limits<float>::max();
+	float distance = minDistance;
+	b2Vec2 tempHit;
+	for(auto wall : this->walls)
+	{
+		LineIntersection(from, from + 1000.f * direction, wall.second.From(), wall.second.To(), distance, tempHit);
+		if(distance < minDistance)
 		{
-			float minDistance = std::numeric_limits<float>::max();
-			float distance = minDistance;
-			b2Vec2 tempHit;
-			for(auto wall : this->walls)
-			{
-				LineIntersection(from, from + 1000.f * direction, wall.second.From(), wall.second.To(), distance, tempHit);
-				if(distance < minDistance)
-				{
-					hit = tempHit;
-					minDistance = distance;
-				}
-			}
+			hit = tempHit;
+			minDistance = distance;
 		}
 	}
 	return nullptr;
@@ -193,6 +193,11 @@ World::Ray::RayIterator& World::Ray::RayIterator::operator++()
 size_t World::Ray::RayIterator::operator*() const
 {
 	return size_t(this->X + partitionX * Y);
+}
+
+bool World::Ray::RayIterator::operator==(const RayIterator& other) const
+{
+	return !this->operator!=(other);
 }
 
 bool World::Ray::RayIterator::operator!=(const RayIterator& other) const

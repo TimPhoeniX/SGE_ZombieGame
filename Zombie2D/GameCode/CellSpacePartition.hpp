@@ -14,8 +14,24 @@ struct AABB
 				 || (other.low.x > this->high.x)
 				 || (other.high.x < this->low.x));
 	}
+	inline b2Vec2 UpperLeft() const
+	{
+		return {this->low.x, this->high.y};
+	}
+	inline b2Vec2 UpperRight() const
+	{
+		return this->high;
+	}
+	inline b2Vec2 LowerLeft() const
+	{
+		return this->low;
+	}
+	inline b2Vec2 LowerRight() const
+	{
+		return {this->high.x, this->low.y};
+	}
 	AABB() = default;
-	AABB(b2Vec2 low, b2Vec2 high): low(low), high(high){}
+	inline AABB(b2Vec2 low, b2Vec2 high): low(low), high(high){}
 };
 
 template<typename T>
@@ -164,10 +180,28 @@ public:
 		return id >= X*Y ? X*Y - 1u : id;
 	}
 
+
+	static AABB getAABB(T* e)
+	{
+		return getAABB(e->getPosition(), e->getShape()->getWidth(), e->getShape()->getHeight());
+	}
+
+	static AABB getAABB(b2Vec2 position,float width, float height)
+	{
+		AABB aabb(position,position);
+		b2Vec2 extent = {width * 0.5f, height * 0.5f};
+		aabb.low -= extent;
+		aabb.high += extent;
+		return aabb;
+	}
+
 	void AddEntity(T* e)
 	{
 		if(!e) return;
-		this->cells[this->PosToIndex(e->getPosition())].Entities.push_back(e);
+		for(size_t index : AABBQuery(this,this->getAABB(e)))
+		{
+			this->cells[index].Entities.push_back(e);
+		}
 	}
 
 	void UpdateEntity(T* e, b2Vec2 oldPos)

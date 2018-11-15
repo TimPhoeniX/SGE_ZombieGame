@@ -66,6 +66,7 @@ public:
 		: Logic(SGE::LogicPriority::Highest), world(world), player(player), movers(movers)
 	{}
 
+	void CollideWithWall(MovingObject& mo) const;
 	void performLogic() override;
 };
 

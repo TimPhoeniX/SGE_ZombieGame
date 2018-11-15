@@ -175,6 +175,7 @@ void ZombieScene::loadScene()
 	//AddMovement here
 	this->addLogic(new SteeringBehavioursUpdate(&this->movers));
 	this->addLogic(new MoveAwayFromObstacle(&this->world, player, &world));
+	this->addLogic(new MoveAwayFromWall(&this->world, player, this->movers));
 	this->addLogic(new DamagePlayer(&this->world, this->player, 0));
 	auto aim = new Aim(&this->world, player, mouse, camera, this->killCount, pointer);
 	this->addLogic(aim);

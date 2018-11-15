@@ -93,27 +93,46 @@ void MoveAwayFromObstacle::performLogic()
 	}
 }
 
+void MoveAwayFromWall::CollideWithWall(MovingObject& mo) const
+{
+	for (std::pair<SGE::Object*, Wall>& wall: this->world->getWalls())
+	{
+		if(PointToLineDistance(mo.getPosition(), wall.second.From(), wall.second.To()) < mo.getShape()->getRadius())
+		{
+			float dist;
+			b2Vec2 intersect;
+			b2Vec2 radius;
+			switch (wall.second.Type())
+			{
+			case Wall::Left: 
+				radius = b2Vec2{+mo.getShape()->getRadius(),0.f};
+				break;
+			case Wall::Right:
+				radius = b2Vec2{-mo.getShape()->getRadius(),0.f};
+				break;
+			case Wall::Top:
+				radius = b2Vec2{0.f, -mo.getShape()->getRadius()};
+				break;
+			case Wall::Bottom:
+				radius = b2Vec2{0.f, +mo.getShape()->getRadius()};
+				break;
+			default:
+				continue;
+			}
+			LineIntersection(mo.getPosition(), mo.getPosition() + radius, wall.second.From(), wall.second.To(), dist, intersect);
+			intersect -= mo.getPosition() + radius;
+			mo.setPosition(mo.getPosition() + intersect);
+		}
+	}
+}
+
 void MoveAwayFromWall::performLogic()
 {
 	for(MovingObject& mo: this->movers)
 	{
-		for (std::pair<SGE::Object*, Wall>& wall: this->world->getWalls())
-		{
-			if(PointToLineDistance(mo.getPosition(), wall.second.From(), wall.second.To()) < mo.getShape()->getRadius())
-			{
-				float dist;
-				b2Vec2 intersect;
-				switch (wall.second.Type())
-				{
-				case Wall::Left: break;
-				case Wall::Right: break;
-				case Wall::Top: break;
-				case Wall::Bottom: break;
-				default:break;
-				}
-			}
-		}
+		CollideWithWall(mo);
 	}
+	CollideWithWall(*this->player);
 }
 
 SnapCamera::SnapCamera(const float speed, const SGE::Key up, const SGE::Key down, const SGE::Key left, const SGE::Key right, const SGE::Key snapKey, SGE::Object* snapTo, SGE::Camera2d* cam): Logic(SGE::LogicPriority::Highest), speed(speed), up(up), down(down), left(left), right(right), snapKey(snapKey), snapTo(snapTo), cam(cam)
@@ -185,6 +204,7 @@ bool Aim::aim(b2Vec2 pos, b2Vec2 direction)
 		ZombieScene::zombieBatch->removeObject(hitObject);
 		ZombieScene::deadZombieBatch->addObject(hitObject);
 		hitObject->setState(MoverState::Dead);
+		hitObject->setLayer(0.2);
 		this->world->RemoveMover(hitObject);
 	}
 	return bool(hitObject);
