@@ -6,6 +6,7 @@
 #include <Object/Camera2d/sge_camera2d.hpp>
 #include <IO/Mouse/sge_mouse.hpp>
 #include <vector>
+#include "MovingObject.hpp"
 
 namespace SGE
 {
@@ -51,6 +52,24 @@ public:
 		: Logic(SGE::LogicPriority::Highest), world(world), player(player), obstacles(worldElements)
 	{
 		movers.reserve(10);
+	}
+
+	void performLogic() override;
+};
+
+class SeparateZombies : public SGE::Logic
+{
+protected:
+	World* world;
+	MovingObject* player;
+	std::vector<MovingObject>* movers;
+	std::vector<MovingObject*> colliding;
+public:
+
+	SeparateZombies(World* const world, MovingObject* player, std::vector<MovingObject>* const movers)
+		: Logic(SGE::LogicPriority::Highest), world(world), player(player), movers(movers)
+	{
+		colliding.reserve(10);
 	}
 
 	void performLogic() override;

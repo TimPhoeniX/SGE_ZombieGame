@@ -56,7 +56,7 @@ b2Vec2 SteeringBehaviours::CalculateForce()
 	{
 		if(this->owner->IsMoving())
 		{
-			sForce += 1.5f * this->Wander();
+			sForce += 2.5f * this->Wander();
 			sForce += 2.5f * this->Hide(this->player, true, &obstacle);
 			if(this->alone_time * distCoef > (alone_time_max + wander_time_max))
 			{

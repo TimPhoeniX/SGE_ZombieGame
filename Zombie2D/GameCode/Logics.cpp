@@ -25,7 +25,7 @@ void DamagePlayer::performLogic()
 		
 	}
 	this->movers.clear();
-	this->world->getNeighbours(this->movers, this->player->getPosition(), 2.f * this->player->getShape()->getRadius());
+	this->world->getNeighbours(this->movers, this->player->getPosition(), 3.f * this->player->getShape()->getRadius());
 	for (MovingObject* mover : this->movers)
 	{
 		float dist = b2DistanceSquared(this->player->getPosition(), mover->getPosition());
@@ -61,7 +61,7 @@ void MoveAwayFromObstacle::performLogic()
 				b2Vec2 toMover = mo->getPosition() - w.getPosition();
 				float dist = toMover.Length();
 				float radius = moShape.getRadius() + obShape.getRadius();
-				if(dist < radius)
+				if(dist > 0.f && dist < radius)
 				{
 					toMover *= (radius - dist) / dist;
 					mo->setPosition(mo->getPosition() + toMover);
@@ -102,6 +102,55 @@ void MoveAwayFromObstacle::performLogic()
 		}
 		case SGE::ShapeType::None: break;
 		default:;
+		}
+	}
+}
+
+void SeparateZombies::performLogic()
+{
+	float baseRadius = 0.f;
+	b2Vec2 basePosition = b2Vec2_zero;
+	float otherRadius = 0.f;
+	b2Vec2 otherPosition = b2Vec2_zero;
+	for (MovingObject& mo : *this->movers)
+	{
+		baseRadius = mo.getShape()->getRadius();
+		basePosition = mo.getPosition();
+		this->colliding.clear();
+		this->world->getNeighbours(this->colliding, &mo, 2.f * baseRadius);
+		if (this->colliding.empty()) continue;
+		for (MovingObject* other : this->colliding)
+		{
+			otherPosition = other->getPosition();
+			otherRadius = other->getShape()->getRadius();
+			b2Vec2 toOther = otherPosition - basePosition;
+			float dist = toOther.Length();
+			float radius = baseRadius + otherRadius;
+			if (dist < radius)
+			{
+				toOther *= 0.5f * (radius - dist) / dist;
+				other->setPosition(otherPosition + toOther);
+				mo.setPosition(basePosition - toOther);
+			}
+		}
+	}
+	baseRadius = this->player->getShape()->getRadius();
+	basePosition = this->player->getPosition();
+	this->colliding.clear();
+	this->world->getNeighbours(this->colliding, basePosition, 3.f * baseRadius);
+	if (this->colliding.empty()) return;
+	for (MovingObject* other : this->colliding)
+	{
+		otherPosition = other->getPosition();
+		otherRadius = other->getShape()->getRadius();
+		b2Vec2 toOther = otherPosition - basePosition;
+		float dist = toOther.Length();
+		float radius = baseRadius + otherRadius;
+		if (dist < radius)
+		{
+			toOther *= 0.5f * (radius - dist) / dist;
+			other->setPosition(otherPosition + toOther);
+			this->player->setPosition(basePosition - toOther);
 		}
 	}
 }
