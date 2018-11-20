@@ -7,10 +7,11 @@ class IntroScene: public SGE::Scene
 {
 protected:
 	std::string path;
-	SGE::Scene* next;
+	Scene* next;
 public:
+	bool won;
 
-	IntroScene(SGE::Scene* next, const char* path);
+	IntroScene(Scene* next, const char* path);
 
 	virtual void loadScene() override;
 
@@ -23,11 +24,14 @@ public:
 
 class EndScene: public IntroScene
 {
-public:
-	using IntroScene::IntroScene;
-	virtual void loadScene() override;
 	size_t winBatch = 0;
 	size_t loseBatch = 0;
+	std::string path2;
+public:
+	bool won;
+	EndScene(Scene* next, const char* path, const char* path2);
+	void onDraw() override;
+	virtual void loadScene() override;
 };
 
 #endif

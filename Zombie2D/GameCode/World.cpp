@@ -1,6 +1,4 @@
 #include "World.hpp"
-#include <iostream>
-#include <regex>
 #include "Utilities.hpp"
 
 World::World(float width, float height)
@@ -185,13 +183,14 @@ World::Ray::RayIterator& World::Ray::RayIterator::operator++()
 	else
 	{
 		tMaxY += tDeltaY;
-		Y += deltaX;
+		Y += deltaY;
 	}
 	return *this;
 }
 
 size_t World::Ray::RayIterator::operator*() const
 {
+	//std::cout << "X: " << this->X << " Y: " << this->Y << std::endl;
 	return size_t(this->X + partitionX * Y);
 }
 

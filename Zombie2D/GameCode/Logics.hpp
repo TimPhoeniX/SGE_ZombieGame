@@ -27,6 +27,8 @@ protected:
 	Player* player;
 	float dps;
 	std::vector<MovingObject*> movers;
+	float timer = 0.f;
+	bool ticked = false;
 public:
 	explicit DamagePlayer(World* world, Player* player, float dps) : Logic(SGE::LogicPriority::High), world(world), player(player), dps(dps)
 	{

@@ -18,6 +18,9 @@ void PlayerMove::performLogic()
 	if(b2Vec2_zero != move)
 	{
 		move.Normalize();
-		this->object->setPosition(this->object->getPosition() + SGE::delta_time * speed * move);
+		if(SGE::isPressed(SGE::Key::LShift))
+			this->object->setPosition(this->object->getPosition() + SGE::delta_time * 3.f * speed * move);
+		else
+			this->object->setPosition(this->object->getPosition() + SGE::delta_time * speed * move);
 	}
 }

@@ -4,6 +4,10 @@
 #include <vector>
 #include "Path.hpp"
 
+namespace SGE
+{
+	class Object;
+}
 class MovingObject;
 
 enum class Deceleration:char
@@ -19,6 +23,7 @@ protected:
 	std::array<b2Vec2, 3> feelers = {b2Vec2_zero, b2Vec2_zero, b2Vec2_zero};
 	MovingObject* owner = nullptr;
 	const MovingObject* player = nullptr;
+	const SGE::Object* obstacle = nullptr;
 	std::vector<MovingObject*> neighbours;
 	b2Vec2 wTarget = b2Vec2_zero;
 	Path path;
@@ -27,6 +32,8 @@ protected:
 	float wJitter = 15.f;
 	float boxLength = 8.f;
 	float32 WSDsq = 0.001f;
+	float total_space_time = 0.0f;
+	float alone_time = 0.0f;
 	void CreateFeelers();
 	static b2Vec2 GetHidingSpot(const b2Vec2& obPos, float obRadius, b2Vec2 targetPos);
 
@@ -43,7 +50,7 @@ public:
 	b2Vec2 ObstacleAvoidance();
 	b2Vec2 WallAvoidance();
 	b2Vec2 Interpose(const MovingObject*const aA, const MovingObject*const aB) const;
-	b2Vec2 Hide(const MovingObject*const target) const;
+	b2Vec2 Hide(const MovingObject*const target, bool runaway = false,const SGE::Object** = nullptr) const;
 	b2Vec2 FollowPath();
 	b2Vec2 OffsetPursuit(const MovingObject*const leader, b2Vec2 offset) const;
 	b2Vec2 Separation(const std::vector<MovingObject*>& neighbours) const;

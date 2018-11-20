@@ -2,6 +2,16 @@
 #include "Box2D/Common/b2Math.h"
 #include <vector>
 #include <array>
+#include <set>
+
+namespace
+{
+	template<typename Vec, typename T>
+	void EraMove(Vec& v, const T& e)
+	{
+		v.erase(std::remove(v.begin(), v.end(), e), v.end());
+	}
+}
 
 struct AABB
 {
@@ -150,13 +160,14 @@ public:
 			{
 				for(T* en : cell.Entities)
 				{
-					if(b2DistanceSquared(en->getPosition(), pos), radius*radius)
+					if(b2DistanceSquared(en->getPosition(), pos) < radius*radius)
 					{
 						res.push_back(en);
 					}
 				}
 			}
 		}*/
+		std::set<T*> setOfNeighbours;
 		AABBQuery list(this, query);
 		for(size_t it: list)
 		{
@@ -165,13 +176,14 @@ public:
 			{
 				for(T* en : cell.Entities)
 				{
-					if(b2DistanceSquared(en->getPosition(), pos), radius*radius)
+					if(b2DistanceSquared(en->getPosition(), pos) < radius*radius)
 					{
-						res.push_back(en);
+						setOfNeighbours.insert(en);
 					}
 				}
 			}
 		}
+		res.assign(setOfNeighbours.begin(), setOfNeighbours.end());
 	}
 
 	size_t PosToIndex(b2Vec2 pos) const
@@ -186,6 +198,10 @@ public:
 		return getAABB(e->getPosition(), e->getShape()->getWidth(), e->getShape()->getHeight());
 	}
 
+	static AABB getAABB(T* e, b2Vec2 position)
+	{
+		return getAABB(position, e->getShape()->getWidth(), e->getShape()->getHeight());
+	}
 	static AABB getAABB(b2Vec2 position,float width, float height)
 	{
 		AABB aabb(position,position);
@@ -206,12 +222,42 @@ public:
 
 	void UpdateEntity(T* e, b2Vec2 oldPos)
 	{
-		size_t oldI = this->PosToIndex(oldPos);
-		size_t newI = this->PosToIndex(e->getPosition());
-		if(oldI == newI) return;
-		auto& ent = this->cells[oldI].Entities;
-		ent.erase(std::remove(ent.begin(), ent.end(), e), ent.end());
-		this->cells[newI].Entities.push_back(e);
+		AABBQuery Old(this,getAABB(e, oldPos)), New(this,getAABB(e));
+		auto s1 = Old.begin(), e1 = Old.end(), s2 = New.begin(), e2 = New.end();
+		while(s1 != e1)
+		{
+			if(s2 == e2)
+			{
+				while(s1 != e1)
+				{
+					EraMove(this->cells[*s1].Entities, e);
+					++s1;
+				}
+				return;
+			}
+			if(*s1 < *s2)
+			{
+				EraMove(this->cells[*s1].Entities, e);
+				++s1;
+			}
+			else
+			{
+				if(*s2 < *s1)
+				{
+					this->cells[*s2].Entities.push_back(e);
+				}
+				else
+				{
+					++s1;
+				}
+				++s2;
+			}
+		}
+		while(s2 != e2)
+		{
+			this->cells[*s2].Entities.push_back(e);
+			++s2;
+		}
 	}
 
 	const std::vector<T*>& getEntities(size_t index) const
@@ -221,9 +267,12 @@ public:
 
 	void RemoveEntity(T* e)
 	{
-		size_t idx = this->PosToIndex(e->getPosition());
-		auto& ent = this->cells[idx].Entities;
-		ent.erase(std::remove(ent.begin(), ent.end(), e), ent.end());
+		if(!e) return;
+		for(size_t index : AABBQuery(this, this->getAABB(e)))
+		{
+			auto& ent = this->cells[index].Entities;
+			ent.erase(std::remove(ent.begin(), ent.end(), e), ent.end());
+		}
 	}
 };
 

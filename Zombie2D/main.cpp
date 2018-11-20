@@ -38,7 +38,7 @@ int main(int argc, char * argv[])
 
 	ZombieScene* S1 = new ZombieScene(game, "Levels/level1.txt");
 	SGE::Scene* S0 = new IntroScene(S1, "Resources/Textures/zombie-game.png");
-	SGE::Scene* S2 = new EndScene(S1, "Resources/Textures/end-game.png");
+	SGE::Scene* S2 = new EndScene(S1, "Resources/Textures/end-game.png", "Resources/Textures/lost-game.png");
 
 	S1->endScene = S2;
 

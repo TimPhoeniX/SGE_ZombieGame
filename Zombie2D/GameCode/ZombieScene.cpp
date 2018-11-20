@@ -18,6 +18,7 @@
 #include "Game/InputHandler/sge_input_binder.hpp"
 #include "Renderer/SpriteBatch/sge_sprite_batch.hpp"
 #include "Renderer/sge_renderer.hpp"
+#include <allocators>
 
 SGE::RealSpriteBatch* ZombieScene::zombieBatch;
 SGE::RealSpriteBatch* ZombieScene::deadZombieBatch;
@@ -31,6 +32,8 @@ bool ZombieScene::init()
 
 constexpr float Width = 160.f;
 constexpr float Height = 120.f;
+constexpr size_t pillarsMax = 30;
+constexpr size_t zombiesMax = 70;
 
 ZombieScene::ZombieScene(SGE::Game* game, const char* path): Scene(), world(Width, Height), game(game),
 path([game](const char* path)
@@ -39,7 +42,7 @@ path([game](const char* path)
 }(path))
 {
 	static bool initialized = init();
-	this->movers.reserve(100u);
+	this->movers.reserve(zombiesMax);
 }
 
 void ZombieScene::loadScene()
@@ -59,11 +62,11 @@ void ZombieScene::loadScene()
 	std::string beamPath = "Resources/Textures/pointer.png";
 
 	SGE::RealSpriteBatch* wallBatch = renderer->getBatch(renderer->newBatch(scaleUVProgram, lightBrickTexPath, 4, false, true));
-	SGE::RealSpriteBatch* pillarsBatch = renderer->getBatch(renderer->newBatch(basicProgram, pillarTexPath, 40, false, true));
+	SGE::RealSpriteBatch* pillarsBatch = renderer->getBatch(renderer->newBatch(basicProgram, pillarTexPath, pillarsMax, false, true));
 	SGE::RealSpriteBatch* playerBatch = renderer->getBatch(renderer->newBatch(basicProgram, playerTexPath, 1));
 	SGE::RealSpriteBatch* beamBatch = renderer->getBatch(renderer->newBatch(basicProgram, beamPath, 1));
-	deadZombieBatch = renderer->getBatch(renderer->newBatch(basicProgram, deadZombieTexPath, 50));
-	zombieBatch = renderer->getBatch(renderer->newBatch(basicProgram, zombieTexPath, 50));
+	deadZombieBatch = renderer->getBatch(renderer->newBatch(basicProgram, deadZombieTexPath, zombiesMax));
+	zombieBatch = renderer->getBatch(renderer->newBatch(basicProgram, zombieTexPath, zombiesMax));
 
 	GLuint IBO = zombieBatch->initializeIBO();
 	GLuint sampler = zombieBatch->initializeSampler();
@@ -74,8 +77,9 @@ void ZombieScene::loadScene()
 		b->initializeSampler(sampler);
 	}
 
+	this->player = new Player({0.5*Width, 0.5*Height}, SGE::Shape::Circle(0.45f,true), &this->world);
 	auto& world = this->level.getWorld();
-	world.reserve(50u);
+	world.reserve(4 + pillarsMax);
 	//Boundaries
 
 	SGE::Shape* horizontal = SGE::Shape::Rectangle(Width, 1.f, false);
@@ -85,51 +89,40 @@ void ZombieScene::loadScene()
 	world.back().setShape(vertical);
 	this->world.AddWall(&world.back(), Wall::Right);
 	wallBatch->addObject(&world.back());
+
 	world.emplace_back(Width + .5f, Height * 0.5f, lightBrickTexPath);
 	world.back().setShape(vertical);
 	this->world.AddWall(&world.back(), Wall::Left);
 	wallBatch->addObject(&world.back());
+
 	world.emplace_back(Width * 0.5f, Height + .5f, lightBrickTexPath);
 	world.back().setShape(horizontal);
 	this->world.AddWall(&world.back(), Wall::Bottom);
 	wallBatch->addObject(&world.back());
+
 	world.emplace_back(Width * 0.5f, -0.5f, lightBrickTexPath);
 	world.back().setShape(horizontal);
 	this->world.AddWall(&world.back(), Wall::Top);
 	wallBatch->addObject(&world.back());
 
-	SGE::Camera2d* camera = game->getCamera();
-	SGE::MouseObject* mouse = game->getMouse();
-
-	this->player = new Player({0.5*Width, 0.5*Height}, getCircle(), &this->world);
-	this->addObject(this->player);
-	playerBatch->addObject(this->player);
-
-	auto PlayerMoveLogic = new PlayerMove(player, 3, SGE::Key::W, SGE::Key::S, SGE::Key::A, SGE::Key::D);
-
-	auto camLogic = new SnapCamera(8, SGE::Key::Up, SGE::Key::Down, SGE::Key::Left, SGE::Key::Right, SGE::Key::O, player, camera);
-	auto camZoom = new SGE::Logics::CameraZoom(camera, 0.5f, 0.5f, 0.1f, SGE::Key::Q, SGE::Key::E);
-
-	camera->setCameraScale(0.1f);
-
-	this->addLogic(PlayerMoveLogic);
-	this->addLogic(camLogic);
-	this->addLogic(camZoom);
-
-	std::set<std::pair<size_t, size_t>> free;
+	std::set<std::pair<size_t, size_t>> pillarsSlot;
+	std::set<std::pair<size_t, size_t>> zombiesSlot;
 
 	srand(time(NULL));
 
-	constexpr size_t humans = 65;
-	int pillars = 20;
 	constexpr size_t border = 6u;
-	constexpr size_t spread = 12u;
-	while(free.size() < humans)
+	constexpr size_t spread = 11u;
+	while(pillarsSlot.size() < pillarsMax)
 	{
-		free.emplace(border + spread * (rand() % size_t((Width - 2u * border) / spread)), border + spread * (rand() % size_t((Height - 2u * border) / spread)));
+		pillarsSlot.emplace(border + spread * (rand() % size_t((Width - 2u * border) / spread)), border + spread * (rand() % size_t((Height - 2u * border) / spread)));
 	}
 
-	std::vector<std::pair <size_t, size_t>> freeList(free.begin(), free.end());
+	while(zombiesSlot.size() < zombiesMax)
+	{
+		zombiesSlot.emplace(border + spread * (rand() % size_t((Width - 2u * border) / spread)), border + spread * (rand() % size_t((Height - 2u * border) / spread)));
+	}
+
+	std::vector<std::pair <size_t, size_t>> freeList(pillarsSlot.begin(), pillarsSlot.end());
 
 	std::random_shuffle(freeList.begin(), freeList.end());
 
@@ -137,19 +130,20 @@ void ZombieScene::loadScene()
 
 	for(auto pos : freeList)
 	{
-		if(pillars > 0)
-		{
-			world.emplace_back(float(pos.first), float(pos.second), game->getGamePath() + "Resources/Textures/pillar.png");
-			float radius = (rand() % 10 / 10.f) + 2.f;
-			world.back().setVisible(true);
-			world.back().setDrawable(true);
-			world.back().setShape(SGE::Shape::Circle(radius, false));
-			this->world.AddObstacle(&world.back());
-			pillarsBatch->addObject(&world.back());
-			--pillars;
-			continue;
-		}
-		b2Vec2 heading{0.f,1.f};
+		world.emplace_back(float(pos.first) + randf()*0.3f, float(pos.second) + randf()*0.2f,
+						   game->getGamePath() + "Resources/Textures/pillar.png");
+		float radius = (rand() % 10 / 10.f) + 2.f;
+		world.back().setVisible(true);
+		world.back().setDrawable(true);
+		world.back().setShape(SGE::Shape::Circle(radius, false));
+		this->world.AddObstacle(&world.back());
+		pillarsBatch->addObject(&world.back());
+	}
+	freeList.assign(zombiesSlot.begin(), zombiesSlot.end());
+	std::random_shuffle(freeList.begin(), freeList.end());
+	b2Vec2 heading{0.f,1.f};
+	for(auto pos : freeList)
+	{
 		heading = b2Mul(b2Rot(randf()), heading);
 		this->movers.emplace_back(b2Vec2{float(pos.first),float(pos.second)}, getCircle(), &this->world, heading);
 		auto mover = &this->movers.back();
@@ -166,6 +160,24 @@ void ZombieScene::loadScene()
 		zombieBatch->addObject(&mo);
 	}
 
+	//Rest
+	SGE::Camera2d* camera = game->getCamera();
+	SGE::MouseObject* mouse = game->getMouse();
+
+	this->addObject(this->player);
+	playerBatch->addObject(this->player);
+
+	auto PlayerMoveLogic = new PlayerMove(player, 3, SGE::Key::W, SGE::Key::S, SGE::Key::A, SGE::Key::D);
+
+	auto camLogic = new SnapCamera(8, SGE::Key::Up, SGE::Key::Down, SGE::Key::Left, SGE::Key::Right, SGE::Key::O, player, camera);
+	auto camZoom = new SGE::Logics::CameraZoom(camera, 0.5f, 0.5f, 0.1f, SGE::Key::Q, SGE::Key::E);
+
+	camera->setCameraScale(0.1f);
+
+	this->addLogic(PlayerMoveLogic);
+	this->addLogic(camLogic);
+	this->addLogic(camZoom);
+
 	auto pointer = new Image(0.f, 0.f);
 	pointer->setVisible(false);
 	pointer->setDrawable(true);
@@ -176,14 +188,12 @@ void ZombieScene::loadScene()
 	this->addLogic(new SteeringBehavioursUpdate(&this->movers));
 	this->addLogic(new MoveAwayFromObstacle(&this->world, player, &world));
 	this->addLogic(new MoveAwayFromWall(&this->world, player, this->movers));
-	this->addLogic(new DamagePlayer(&this->world, this->player, 0));
+	this->addLogic(new DamagePlayer(&this->world, this->player, 5));
 	auto aim = new Aim(&this->world, player, mouse, camera, this->killCount, pointer);
 	this->addLogic(aim);
 	this->addLogic(new WinCondition(this->zombieCount, this->killCount, endScene, player));
 
 	game->mapAction(SGE::InputBinder(new Shoot(aim), SGE::Key::MB_Left));
-	//Puts player on top
-	game->textureObject(player, "Resources/Textures/player.png");
 	player->setVisible(true);
 	//Generalize this after finals
 	for(auto& e : level.getWorld())

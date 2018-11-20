@@ -13,9 +13,17 @@
 #include "ZombieScene.hpp"
 #include "Utilities.hpp"
 #include "Renderer/SpriteBatch/sge_sprite_batch.hpp"
+#include "IntroScene.hpp"
 
 void DamagePlayer::performLogic()
 {
+	this->ticked = false;
+	if(this->timer > (this->player->getHP() > 10.f ? 1.f : 0.03f))
+	{
+		std::cout << "You have " << player->getHP() << " Health Points left." << std::endl;
+		this->timer = 0;
+		
+	}
 	this->movers.clear();
 	this->world->getNeighbours(this->movers, this->player->getPosition(), 2.f * this->player->getShape()->getRadius());
 	for (MovingObject* mover : this->movers)
@@ -25,6 +33,11 @@ void DamagePlayer::performLogic()
 		radii *= radii;
 		if(dist < radii)
 		{
+			if(!this->ticked)
+			{
+				this->timer += SGE::delta_time;
+				this->ticked = true;
+			}
 			this->player->Damage(SGE::delta_time * this->dps);
 		}
 	}
@@ -64,7 +77,7 @@ void MoveAwayFromObstacle::performLogic()
 		default: ;
 		}
 	}
-	auto ob = this->world->getObstacles(this->player, 4.f*this->player->getShape()->getRadius());
+	auto ob = this->world->getObstacles(this->player, 12.f);
 	for(SGE::Object* o : ob)
 	{
 		SGE::Shape obShape = *o->getShape();
@@ -97,7 +110,9 @@ void MoveAwayFromWall::CollideWithWall(MovingObject& mo) const
 {
 	for (std::pair<SGE::Object*, Wall>& wall: this->world->getWalls())
 	{
-		if(PointToLineDistance(mo.getPosition(), wall.second.From(), wall.second.To()) < mo.getShape()->getRadius())
+		float fradius = mo.getShape()->getRadius();
+		b2Vec2 pos = mo.getPosition();
+		if(PointToLineDistance(pos, wall.second.From(), wall.second.To()) < fradius)
 		{
 			float dist;
 			b2Vec2 intersect;
@@ -105,23 +120,25 @@ void MoveAwayFromWall::CollideWithWall(MovingObject& mo) const
 			switch (wall.second.Type())
 			{
 			case Wall::Left: 
-				radius = b2Vec2{+mo.getShape()->getRadius(),0.f};
+				radius = b2Vec2{+fradius,0.f};
 				break;
 			case Wall::Right:
-				radius = b2Vec2{-mo.getShape()->getRadius(),0.f};
+				radius = b2Vec2{-fradius,0.f};
 				break;
 			case Wall::Top:
-				radius = b2Vec2{0.f, -mo.getShape()->getRadius()};
+				radius = b2Vec2{0.f, -fradius};
 				break;
 			case Wall::Bottom:
-				radius = b2Vec2{0.f, +mo.getShape()->getRadius()};
+				radius = b2Vec2{0.f, +fradius};
 				break;
 			default:
 				continue;
 			}
-			LineIntersection(mo.getPosition(), mo.getPosition() + radius, wall.second.From(), wall.second.To(), dist, intersect);
-			intersect -= mo.getPosition() + radius;
-			mo.setPosition(mo.getPosition() + intersect);
+			if(LineIntersection(pos, pos + radius, wall.second.From(), wall.second.To(), dist, intersect))
+			{
+				intersect -= pos + radius;
+				mo.setPosition(pos + intersect);
+			}
 		}
 	}
 }
@@ -135,7 +152,8 @@ void MoveAwayFromWall::performLogic()
 	CollideWithWall(*this->player);
 }
 
-SnapCamera::SnapCamera(const float speed, const SGE::Key up, const SGE::Key down, const SGE::Key left, const SGE::Key right, const SGE::Key snapKey, SGE::Object* snapTo, SGE::Camera2d* cam): Logic(SGE::LogicPriority::Highest), speed(speed), up(up), down(down), left(left), right(right), snapKey(snapKey), snapTo(snapTo), cam(cam)
+SnapCamera::SnapCamera(const float speed, const SGE::Key up, const SGE::Key down, const SGE::Key left, const SGE::Key right, const SGE::Key snapKey, SGE::Object* snapTo, SGE::Camera2d* cam)
+	:Logic(SGE::LogicPriority::Low), speed(speed), up(up), down(down), left(left), right(right), snapKey(snapKey), snapTo(snapTo), cam(cam)
 {}
 
 void SnapCamera::performLogic()
@@ -204,8 +222,9 @@ bool Aim::aim(b2Vec2 pos, b2Vec2 direction)
 		ZombieScene::zombieBatch->removeObject(hitObject);
 		ZombieScene::deadZombieBatch->addObject(hitObject);
 		hitObject->setState(MoverState::Dead);
-		hitObject->setLayer(0.2);
+		hitObject->setLayer(0.2f);
 		this->world->RemoveMover(hitObject);
+		++this->counter;
 	}
 	return bool(hitObject);
 }
@@ -247,6 +266,7 @@ void WinCondition::performLogic()
 {
 	if(zombies == killedZombies || this->player->getHP() < 0)
 	{
+		reinterpret_cast<EndScene*>(endGame)->won = (zombies == killedZombies);
 		this->sendAction(new Load(endGame));
 	}
 }

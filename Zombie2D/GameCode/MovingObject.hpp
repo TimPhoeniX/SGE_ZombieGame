@@ -7,6 +7,7 @@ class World;
 enum class MoverState: char
 {
 	Moving,
+	Hiding,
 	Attacking,
 	Dead
 };
@@ -24,7 +25,7 @@ protected:
 	float maxTurnRate = 90.f;
 	World* world = nullptr;
 	SteeringBehaviours* steering = new SteeringBehaviours(this);
-	MoverState state = MoverState::Moving;
+	MoverState state = MoverState::Hiding;
 public:
 
 	MovingObject(const b2Vec2& position, SGE::Shape* shape, World* world, const b2Vec2& heading = b2Vec2{1.f,0.f})
@@ -140,6 +141,16 @@ public:
 	bool IsAttacking() const
 	{
 		return this->state == MoverState::Attacking;
+	}
+
+	bool IsHiding() const
+	{
+		return this->state == MoverState::Hiding;
+	}
+
+	bool IsMoving() const
+	{
+		return this->state == MoverState::Moving;
 	}
 
 	void setState(MoverState state)

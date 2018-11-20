@@ -6,6 +6,7 @@
 #include "Utilities.hpp"
 #include "World.hpp"
 #include "Wall.hpp"
+#include "Utils/Timing/sge_fps_limiter.hpp"
 
 SteeringBehaviours::SteeringBehaviours(MovingObject* owner): owner(owner)
 {
@@ -18,30 +19,62 @@ SteeringBehaviours::~SteeringBehaviours()
 
 b2Vec2 SteeringBehaviours::CalculateForce()
 {
+	constexpr float alone_time_max = 15.f;
+	constexpr float wander_time_max = 15.f;
+	float distCoef = b2Clamp(b2Distance(this->player->getPosition(), this->owner->getPosition()), 10.f, 100.f);
+	distCoef = 1.f + (100.f - distCoef) * 0.05;
+	if(((this->total_space_time += SGE::delta_time) > 240.f))
+		this->owner->setState(MoverState::Attacking);
+
 	b2Vec2 sForce = b2Vec2_zero;
-	sForce += 1.5f * this->WallAvoidance();
-	sForce += 2.0f * this->ObstacleAvoidance();
+	sForce += 1.0f * this->WallAvoidance();
+	sForce += 1.0f * this->ObstacleAvoidance();
 
 	this->neighbours.clear();
-	this->owner->getWorld()->getNeighbours(this->neighbours, this->owner, 3.f);
-	if(this->neighbours.size() >= 4u)
+	this->owner->getWorld()->getNeighbours(this->neighbours, this->owner, 5.f);
+	if(this->neighbours.size() >= 5u)
 	{
 		this->owner->setState(MoverState::Attacking);
+		for(auto element : this->neighbours)
+		{
+			element->setState(MoverState::Attacking);
+		}
+	}
+	else
+	{
+		this->alone_time += SGE::delta_time;
 	}
 
 	if(this->owner->IsAttacking())
 	{
-		sForce += 1.f * this->Cohesion(neighbours);
-		sForce += 1.5f * this->Alignment(neighbours);
-		sForce += 2.f * this->Separation(neighbours);
-		sForce += 3.f * this->Pursuit(this->player);
+		sForce += 1.f * this->Cohesion(this->neighbours);
+		sForce += 1.5f * this->Alignment(this->neighbours);
+		sForce += 2.f * this->Separation(this->neighbours);
+		sForce += 2.f * this->Pursuit(this->player);
 	}
 	else
 	{
-		sForce += 1.5 * this->Evade(this->player);
-		sForce += 1.5f * this->Hide(this->player);
-		sForce += 1.5f * this->Wander();
-		sForce += 1.f * this->Separation(neighbours);
+		if(this->owner->IsMoving())
+		{
+			sForce += 1.5f * this->Wander();
+			sForce += 2.5f * this->Hide(this->player, true, &obstacle);
+			if(this->alone_time * distCoef > (alone_time_max + wander_time_max))
+			{
+				this->alone_time = 0.f;
+				this->owner->setState(MoverState::Hiding);
+				this->obstacle = nullptr;
+			}
+		}
+		else
+		{
+			sForce += 2.f * this->Hide(this->player);
+			if(this->alone_time * distCoef > (alone_time_max))
+			{
+				this->alone_time = 0.f;
+				this->owner->setState(MoverState::Moving);
+			}
+		}
+		sForce += 1.f * this->Separation(this->neighbours);
 	}
 	return 2.f * sForce;
 }
@@ -218,22 +251,32 @@ b2Vec2 SteeringBehaviours::GetHidingSpot(const b2Vec2& obPos, float obRadius, b2
 	return distAway * toOb + obPos;
 }
 
-b2Vec2 SteeringBehaviours::Hide(const MovingObject* const target) const
+b2Vec2 SteeringBehaviours::Hide(const MovingObject* const target, bool runaway, const SGE::Object** object) const
 {
-	float closestDist = std::numeric_limits<float>::max();
+	float closestDist = !runaway ? std::numeric_limits<float>::max() : 0.f;
 	b2Vec2 bestSpot = b2Vec2_zero;
-	std::vector<SGE::Object*> obstacles = owner->getWorld()->getObstacles(owner, 15.f);
-	for(SGE::Object* ob : obstacles)
+	if(object && *object)
 	{
-		b2Vec2 spot = this->GetHidingSpot(ob->getPosition(), ob->getShape()->getRadius(), target->getPosition());
-		float dist = b2DistanceSquared(spot, owner->getPosition());
-		if(dist < closestDist)
+		bestSpot = this->GetHidingSpot((*object)->getPosition(), (*object)->getShape()->getRadius(), target->getPosition());
+		closestDist = b2DistanceSquared(bestSpot, owner->getPosition());
+	}
+	else
+	{
+		std::vector<SGE::Object*> obstacles = owner->getWorld()->getObstacles(owner, 30.f);
+		for(SGE::Object* ob : obstacles)
 		{
-			closestDist = dist;
-			bestSpot = spot;
+			b2Vec2 spot = this->GetHidingSpot(ob->getPosition(), ob->getShape()->getRadius(), target->getPosition());
+			float dist = b2DistanceSquared(spot, owner->getPosition());
+			if(!runaway ? dist < closestDist : dist > closestDist)
+			{
+				closestDist = dist;
+				bestSpot = spot;
+				if(object)
+					*object = ob;
+			}
 		}
 	}
-	if(closestDist == std::numeric_limits<float>::max())
+	if(closestDist == std::numeric_limits<float>::max() || closestDist == 0.f)
 	{
 		return this->Evade(target);
 	}
