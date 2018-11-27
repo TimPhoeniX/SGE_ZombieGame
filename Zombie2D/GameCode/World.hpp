@@ -34,7 +34,7 @@ public:
 		public:
 			constexpr RayIterator() = default;
 			constexpr RayIterator(float max_x, float max_y, float delta_x, float delta_y,
-								  size_t delta_x1, size_t delta_y1, size_t x, size_t y);
+								  int delta_x1, int delta_y1, int x, int y);
 
 			RayIterator& operator++();
 			size_t operator*() const;

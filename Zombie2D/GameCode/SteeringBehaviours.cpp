@@ -22,7 +22,7 @@ b2Vec2 SteeringBehaviours::CalculateForce()
 	constexpr float alone_time_max = 15.f;
 	constexpr float wander_time_max = 15.f;
 	float distCoef = b2Clamp(b2Distance(this->player->getPosition(), this->owner->getPosition()), 10.f, 100.f);
-	distCoef = 1.f + (100.f - distCoef) * 0.05;
+	distCoef = 1.f + (100.f - distCoef) * 0.05f;
 	if(((this->total_space_time += SGE::delta_time) > 240.f))
 		this->owner->setState(MoverState::Attacking);
 

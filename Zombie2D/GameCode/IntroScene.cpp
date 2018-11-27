@@ -19,7 +19,7 @@ void IntroScene::loadScene()
 	auto game = SGE::Game::getGame();
 	SGE::BatchRenderer* renderer = game->getRenderer();
 	auto program = renderer->getProgramID("BatchShader.vert","BatchShader.frag");
-	GLuint batch = renderer->newBatch(program, path, 1, false, true);
+	size_t batch = renderer->newBatch(program, path, 1, false, true);
 	renderer->getBatch(batch)->addObject(o);
 	o->setVisible(true);
 	o->setDrawable(true);

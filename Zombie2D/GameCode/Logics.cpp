@@ -275,7 +275,7 @@ bool Aim::aim(b2Vec2 pos, b2Vec2 direction)
 		this->world->RemoveMover(hitObject);
 		++this->counter;
 	}
-	return bool(hitObject);
+	return nullptr != hitObject;
 }
 
 void Aim::performLogic()

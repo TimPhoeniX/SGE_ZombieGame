@@ -164,7 +164,7 @@ World::Ray::RayIterator World::Ray::end() const
 }
 
 constexpr World::Ray::RayIterator::RayIterator(float max_x, float max_y, float delta_x, float delta_y,
-											   size_t delta_x1, size_t delta_y1, size_t x, size_t y)
+											   int delta_x1, int delta_y1, int x, int y)
 	:tDeltaX(delta_x), tDeltaY(delta_y), deltaX(delta_x1), deltaY(delta_y1),
 	tMaxX(max_x), tMaxY(max_y), X(x), Y(y)
 {}

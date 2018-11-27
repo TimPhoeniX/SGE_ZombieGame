@@ -108,7 +108,7 @@ void ZombieScene::loadScene()
 	std::set<std::pair<size_t, size_t>> pillarsSlot;
 	std::set<std::pair<size_t, size_t>> zombiesSlot;
 
-	srand(time(NULL));
+	srand(unsigned(time(NULL)));
 
 	constexpr size_t border = 6u;
 	constexpr size_t spread = 11u;
