@@ -166,7 +166,7 @@ void MoveAwayFromWall::CollideWithWall(MovingObject& mo) const
 			float dist;
 			b2Vec2 intersect;
 			b2Vec2 radius;
-			switch (wall.second.Type())
+			/*switch (wall.second.Type())
 			{
 			case Wall::Left: 
 				radius = b2Vec2{+fradius,0.f};
@@ -182,7 +182,8 @@ void MoveAwayFromWall::CollideWithWall(MovingObject& mo) const
 				break;
 			default:
 				continue;
-			}
+			}*/
+			radius = fradius * -wall.second.Normal();
 			if(LineIntersection(pos, pos + radius, wall.second.From(), wall.second.To(), dist, intersect))
 			{
 				intersect -= pos + radius;
